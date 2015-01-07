@@ -59,32 +59,31 @@ class Babel(object):
         'datetime.long':    None,
     })
 
-    def __init__(self, app=None, default_locale='en', default_timezone='UTC',
+    def __init__(self, app=None, **kwargs):
+        self._locale_cache = dict()
+
+        self.locale_selector_func = None
+        self.timezone_selector_func = None
+
+        if app is not None:
+            self.init_app(app, **kwargs)
+
+    def init_app(self, app, default_locale='en', default_timezone='UTC',
                  date_formats=None, configure_jinja=True, default_domain=None):
+        """Set up this instance for use with *app*, if no app was passed to
+        the constructor.
+        """
+        self.app = app
         self._default_locale = default_locale
         self._default_timezone = default_timezone
         self._date_formats = date_formats
         self._configure_jinja = configure_jinja
-        self.app = app
-
-        self._locale_cache = dict()
 
         if default_domain is None:
             self._default_domain = Domain()
         else:
             self._default_domain = default_domain
 
-        self.locale_selector_func = None
-        self.timezone_selector_func = None
-
-        if app is not None:
-            self.init_app(app)
-
-    def init_app(self, app):
-        """Set up this instance for use with *app*, if no app was passed to
-        the constructor.
-        """
-        self.app = app
         app.babel_instance = self
         if not hasattr(app, 'extensions'):
             app.extensions = {}
