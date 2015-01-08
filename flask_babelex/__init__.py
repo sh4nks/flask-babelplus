@@ -62,9 +62,6 @@ class Babel(object):
     def __init__(self, app=None, **kwargs):
         self._locale_cache = dict()
 
-        self.locale_selector_func = None
-        self.timezone_selector_func = None
-
         if app is not None:
             self.init_app(app, **kwargs)
 
@@ -88,6 +85,9 @@ class Babel(object):
         if not hasattr(app, 'extensions'):
             app.extensions = {}
         app.extensions['babel'] = self
+
+        self.locale_selector_func = None
+        self.timezone_selector_func = None
 
         app.config.setdefault('BABEL_DEFAULT_LOCALE', self._default_locale)
         app.config.setdefault('BABEL_DEFAULT_TIMEZONE', self._default_timezone)
