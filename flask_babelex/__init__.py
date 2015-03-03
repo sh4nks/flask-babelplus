@@ -61,20 +61,31 @@ class Babel(object):
 
     def __init__(self, app=None, **kwargs):
         self._locale_cache = dict()
+        self._default_locale = None
+        self._default_domain = None
+        self._default_timezone = None
+        self._date_formats = None
+        self.app = app
 
         if app is not None:
             self.init_app(app, **kwargs)
 
     def init_app(self, app, default_locale='en', default_timezone='UTC',
                  date_formats=None, configure_jinja=True, default_domain=None):
-        """Set up this instance for use with *app*, if no app was passed to
-        the constructor.
+        """Sets up the Flask-BabelEx extension.
+
+        :param app: The Flask application.
+        :param default_locale: The default locale which should be used.
+        :param default_timezone: The default timezone.
+        :param date_formats: A mapping of Babel datetime format strings
+        :param configure_jinja: If set to ``True`` some convenient jinja2
+                                filters are being added.
+        :param default_domain: The default translation domain.
         """
         self.app = app
         self._default_locale = default_locale
         self._default_timezone = default_timezone
         self._date_formats = date_formats
-        self._configure_jinja = configure_jinja
 
         if default_domain is None:
             self._default_domain = Domain()
@@ -107,7 +118,7 @@ class Babel(object):
         #:      otherwise the default for that language is used.
         self.date_formats = self._date_formats
 
-        if self._configure_jinja:
+        if configure_jinja:
             app.jinja_env.filters.update(
                 datetimeformat=format_datetime,
                 dateformat=format_date,
@@ -189,8 +200,8 @@ class Babel(object):
         return timezone(self.app.config['BABEL_DEFAULT_TIMEZONE'])
 
     def load_locale(self, locale):
-        """Load locale by name and cache it. Returns instance of a `babel.Locale`
-        object.
+        """Load locale by name and cache it. Returns instance of a
+        `babel.Locale` object.
         """
         rv = self._locale_cache.get(locale)
         if rv is None:
@@ -469,8 +480,9 @@ def format_scientific(number, format=None):
 
 
 class Domain(object):
-    """Localization domain. By default will use look for tranlations in Flask application directory
-    and "messages" domain - all message catalogs should be called ``messages.mo``.
+    """Localization domain. By default it will look for tranlations in the
+    Flask application directory and "messages" domain - all message
+    catalogs should be called ``messages.mo``.
     """
     def __init__(self, dirname=None, domain='messages'):
         self.dirname = dirname
@@ -486,7 +498,7 @@ class Domain(object):
 
         ctx.babel_domain = self
 
-    def get_translations_cache(self, ctx):
+    def get_translations_cache(self):
         """Returns dictionary-like object for translation caching"""
         return self.cache
 
@@ -508,7 +520,7 @@ class Domain(object):
 
         locale = get_locale()
 
-        cache = self.get_translations_cache(ctx)
+        cache = self.get_translations_cache()
 
         translations = cache.get(str(locale))
         if translations is None:
@@ -589,15 +601,19 @@ class Domain(object):
         from speaklater import make_lazy_string
         return make_lazy_string(self.pgettext, context, string, **variables)
 
-# This is the domain that will be used if there is no request context (and thus no app)
-# or if the app isn't initialized for babel. Note that if there is no request context,
-# then the standard Domain will use NullTranslations
+# This is the domain that will be used if there is no request context
+# and thus no app.
+# It will also use this domain if the app isn't initialized for babel.
+# Note that if there is no request context, then the standard
+# Domain will use NullTranslations.
 domain = Domain()
+
 
 def get_domain():
     """Return the correct translation domain that is used for this request.
-    This will return the default domain (e.g. "messages" in <approot>/translations")
-    if none is set for this request.
+    This will return the default domain
+    e.g. "messages" in <approot>/translations" if none is set for this
+    request.
     """
     ctx = _request_ctx_stack.top
     if ctx is None:
@@ -617,17 +633,28 @@ def get_domain():
     ctx.babel_domain = d
     return d
 
+
 # Create shortcuts for the default Flask domain
 def gettext(*args, **kwargs):
     return get_domain().gettext(*args, **kwargs)
 _ = gettext
+
+
 def ngettext(*args, **kwargs):
     return get_domain().ngettext(*args, **kwargs)
+
+
 def pgettext(*args, **kwargs):
     return get_domain().pgettext(*args, **kwargs)
+
+
 def npgettext(*args, **kwargs):
     return get_domain().npgettext(*args, **kwargs)
+
+
 def lazy_gettext(*args, **kwargs):
     return get_domain().lazy_gettext(*args, **kwargs)
+
+
 def lazy_pgettext(*args, **kwargs):
     return get_domain().lazy_pgettext(*args, **kwargs)
