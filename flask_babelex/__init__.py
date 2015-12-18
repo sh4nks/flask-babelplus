@@ -82,7 +82,6 @@ class Babel(object):
                                 filters are being added.
         :param default_domain: The default translation domain.
         """
-        self.app = app
         self._default_locale = default_locale
         self._default_timezone = default_timezone
         self._date_formats = date_formats
