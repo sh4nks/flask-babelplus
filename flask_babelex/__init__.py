@@ -17,7 +17,13 @@ if os.environ.get('LC_CTYPE', '').lower() == 'utf-8':
     os.environ['LC_CTYPE'] = 'en_US.utf-8'
 
 from datetime import datetime
-from flask import _request_ctx_stack
+# Find the stack on which we want to store the database connection.
+# Starting with Flask 0.9, the _app_ctx_stack is the correct one,
+# before that we need to use the _request_ctx_stack.
+try:
+    from flask import _app_ctx_stack as stack
+except ImportError:
+    from flask import _request_ctx_stack as stack
 from babel import dates, numbers, support, Locale
 from babel.support import NullTranslations
 from werkzeug import ImmutableDict
@@ -137,6 +143,20 @@ class Babel(object):
                 newstyle=True
             )
 
+    def get_app(self, reference_app=None):
+        """Helper method that implements the logic to look up an application.
+        """
+        if reference_app is not None:
+            return reference_app
+        if self.app is not None:
+            return self.app
+        ctx = stack.top
+        if ctx is not None:
+            return ctx.app
+        raise RuntimeError('application not registered on babel '
+                           'instance and no application bound '
+                           'to current context')
+
     def localeselector(self, f):
         """Registers a callback function for locale selection.  The default
         behaves as if a function was registered that returns `None` all the
@@ -170,7 +190,8 @@ class Babel(object):
 
         .. versionadded:: 0.6
         """
-        dirname = os.path.join(self.app.root_path, 'translations')
+        app = self.get_app()
+        dirname = os.path.join(app.root_path, 'translations')
         if not os.path.isdir(dirname):
             return []
         result = []
@@ -189,14 +210,16 @@ class Babel(object):
         """The default locale from the configuration as instance of a
         `babel.Locale` object.
         """
-        return self.load_locale(self.app.config['BABEL_DEFAULT_LOCALE'])
+        app = self.get_app()
+        return self.load_locale(app.config['BABEL_DEFAULT_LOCALE'])
 
     @property
     def default_timezone(self):
         """The default timezone from the configuration as instance of a
         `pytz.timezone` object.
         """
-        return timezone(self.app.config['BABEL_DEFAULT_TIMEZONE'])
+        app = self.get_app()
+        return timezone(app.config['BABEL_DEFAULT_TIMEZONE'])
 
     def load_locale(self, locale):
         """Load locale by name and cache it. Returns instance of a
@@ -214,7 +237,7 @@ def get_locale():
     a request. If flask-babel was not attached to the Flask application,
     will return 'en' locale.
     """
-    ctx = _request_ctx_stack.top
+    ctx = stack.top
     if ctx is None:
         return None
 
@@ -245,7 +268,7 @@ def get_timezone():
     a request. If flask-babel was not attached to application, will
     return UTC timezone object.
     """
-    ctx = _request_ctx_stack.top
+    ctx = stack.top
     tzinfo = getattr(ctx, 'babel_tzinfo', None)
 
     if tzinfo is None:
@@ -284,7 +307,7 @@ def refresh():
     Without that refresh, the :func:`~flask.flash` function would probably
     return English text and a now German page.
     """
-    ctx = _request_ctx_stack.top
+    ctx = stack.top
     for key in 'babel_locale', 'babel_tzinfo':
         if hasattr(ctx, key):
             delattr(ctx, key)
@@ -294,7 +317,7 @@ def _get_format(key, format):
     """A small helper for the datetime formatting functions.  Looks up
     format defaults for different kinds.
     """
-    babel = _request_ctx_stack.top.app.extensions.get('babel')
+    babel = stack.top.app.extensions.get('babel')
 
     if babel is not None:
         formats = babel.date_formats
@@ -483,6 +506,7 @@ class Domain(object):
     Flask application directory and "messages" domain - all message
     catalogs should be called ``messages.mo``.
     """
+
     def __init__(self, dirname=None, domain='messages'):
         self.dirname = dirname
         self.domain = domain
@@ -491,7 +515,7 @@ class Domain(object):
 
     def as_default(self):
         """Set this domain as default for the current request"""
-        ctx = _request_ctx_stack.top
+        ctx = stack.top
         if ctx is None:
             raise RuntimeError("No request context")
 
@@ -513,7 +537,7 @@ class Domain(object):
         object if used outside of the request or if a translation cannot be
         found.
         """
-        ctx = _request_ctx_stack.top
+        ctx = stack.top
         if ctx is None:
             return NullTranslations()
 
@@ -614,7 +638,7 @@ def get_domain():
     e.g. "messages" in <approot>/translations" if none is set for this
     request.
     """
-    ctx = _request_ctx_stack.top
+    ctx = stack.top
     if ctx is None:
         return domain
 
