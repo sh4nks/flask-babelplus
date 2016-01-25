@@ -71,7 +71,6 @@ class Babel(object):
         self._default_domain = None
         self._default_timezone = None
         self._date_formats = None
-        self.app = app
 
         if app is not None:
             self.init_app(app, **kwargs)
@@ -101,6 +100,7 @@ class Babel(object):
         if not hasattr(app, 'extensions'):
             app.extensions = {}
         app.extensions['babel'] = self
+        self.app = app
 
         self.locale_selector_func = None
         self.timezone_selector_func = None
@@ -144,7 +144,8 @@ class Babel(object):
             )
 
     def get_app(self, reference_app=None):
-        """Helper method that implements the logic to look up an application.
+        """Helper method that implements the logic to look up an a
+        pplication.
         """
         if reference_app is not None:
             return reference_app
