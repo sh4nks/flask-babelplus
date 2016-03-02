@@ -1,26 +1,31 @@
-Flask-BabelEx
-=============
+Flask-BabelPlus
+===============
 
-.. module:: flask.ext.babelex
+.. module:: flask_babelplus
 
-Flask-BabelEx is an extension to `Flask`_ that adds i18n and l10n support to
+Flask-BabelPlus is an extension to `Flask`_ that adds i18n and l10n support to
 any Flask application with the help of `babel`_, `pytz`_ and
 `speaklater`_.  It has builtin support for date formatting with timezone
 support as well as a very simple and friendly interface to :mod:`gettext`
 translations.
+
+.. contents::
+   :local:
+   :backlinks: none
+
 
 Installation
 ------------
 
 Install the extension with one of the following commands::
 
-    $ easy_install Flask-BabelEx
+    $ easy_install Flask-BabelPlus
 
 or alternatively if you have pip installed::
 
-    $ pip install Flask-BabelEx
+    $ pip install Flask-BabelPlus
 
-Please note that Flask-BabelEx requires Jinja 2.5.  If you are using an
+Please note that Flask-BabelPlus requires Jinja 2.5.  If you are using an
 older version you will have to upgrade or disable the Jinja support.
 
 
@@ -31,11 +36,17 @@ To get started all you need to do is to instanciate a :class:`Babel`
 object after configuring the application::
 
     from flask import Flask
-    from flask.ext.babelex import Babel
+    from flask_babelplus import Babel
 
     app = Flask(__name__)
     app.config.from_pyfile('mysettings.cfg')
     babel = Babel(app)
+
+The main difference from `Flask-BabelEx`_ is, that you can configure
+Flask-BabelPlus when using the factory method of initializing extensions::
+
+    # Flask-BabelPlus
+    babel.init_app(app=app, default_domain=FlaskBBDomain(app))
 
 The babel object itself can be used to configure the babel support
 further.  Babel has two configuration values that can be used to change
@@ -106,7 +117,7 @@ To play with the date formatting from the console, you can use the
 
 Here some examples:
 
->>> from flask.ext.babelex import format_datetime
+>>> from flask_babelplus import format_datetime
 >>> from datetime import datetime
 >>> format_datetime(datetime(1987, 3, 5, 17, 12))
 u'Mar 5, 1987 5:12:00 PM'
@@ -122,7 +133,7 @@ u'05 12 1987'
 And again with a different language:
 
 >>> app.config['BABEL_DEFAULT_LOCALE'] = 'de'
->>> from flask.ext.babelex import refresh; refresh()
+>>> from flask_babelplus import refresh; refresh()
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'EEEE, d. MMMM yyyy H:mm')
 u'Donnerstag, 5. M\xe4rz 1987 17:12'
 
@@ -142,7 +153,7 @@ There are two functions responsible for translating: :func:`gettext` and
 :func:`ngettext`.  The first to translate singular strings and the second
 to translate strings that might become plural.  Here some examples::
 
-    from flask.ext.babelex import gettext, ngettext
+    from flask_babelplus import gettext, ngettext
 
     gettext(u'A simple string')
     gettext(u'Value: %(value)s', value=42)
@@ -153,16 +164,16 @@ application and define them outside of a request, you can use a lazy
 strings.  Lazy strings will not be evaluated until they are actually used.
 To use such a lazy string, use the :func:`lazy_gettext` function::
 
-    from flask.ext.babelex import lazy_gettext
+    from flask_babelplus import lazy_gettext
 
     class MyForm(formlibrary.FormBase):
         success_message = lazy_gettext(u'The form was successfully saved.')
 
-So how does Flask-BabelEx find the translations?  Well first you have to
+So how does Flask-BabelPlus find the translations?  Well first you have to
 create some.  Here is how you do it:
 
 Translating Applications
-------------------------
+````````````````````````
 
 First you need to mark all the strings you want to translate in your
 application with :func:`gettext` or :func:`ngettext`.  After that, it's
@@ -198,7 +209,7 @@ translation.  For example to translate to German use this command::
     $ pybabel init -i messages.pot -d translations -l de
 
 ``-d translations`` tells pybabel to store the translations in this
-folder.  This is where Flask-BabelEx will look for translations.  Put it
+folder.  This is where Flask-BabelPlus will look for translations.  Put it
 next to your template folder.
 
 Now edit the ``translations/de/LC_MESSAGES/messages.po`` file as needed.
@@ -218,7 +229,7 @@ out if a translation matched a changed key).  If you have fuzzy entries,
 make sure to check them by hand and remove the fuzzy flag before
 compiling.
 
-Flask-BabelEx looks for message catalogs in ``translations`` directory
+Flask-BabelPlus looks for message catalogs in ``translations`` directory
 which should be located under Flask application directory. Default
 domain is "messages".
 
@@ -230,17 +241,17 @@ directory structure should look like this:
     translations/fr/LC_MESSAGES/messages.mo
 
 Translation Domains
--------------------
+```````````````````
 
-By default, Flask-BabelEx will use "messages" domain, which will make it use translations
+By default, Flask-BabelPlus will use "messages" domain, which will make it use translations
 from the ``messages.mo`` file. It is not very convenient for third-party Flask extensions,
 which might want to localize themselves without requiring user to merge their translations
 into "messages" domain.
 
-Flask-BabelEx allows extension developers to specify which translation domain to
+Flask-BabelPlus allows extension developers to specify which translation domain to
 use::
 
-    from flask.ext.babelex import Domain
+    from flask_babelplus import Domain
 
     mydomain = Domain(domain='myext')
 
@@ -254,9 +265,9 @@ they have to be located in ``translations`` directory under users Flask applicat
 If extension is distributed with the localizations, it is possible to specify
 their location::
 
-    from flask.ext.babelex import Domain
+    from flask_babelplus import Domain
 
-    from flask.ext.myext import translations
+    from flask_myext import translations
     mydomain = Domain(translations.__path__[0])
 
 ``mydomain`` will look for translations in extension directory with default (messages)
@@ -269,7 +280,7 @@ To set the :class:`Domain` that will be used in an app, pass it to
 :class:`Babel` on initialization::
 
     from flask import Flask
-    from flask.ext.babelex import Babel, Domain
+    from flask_babelplus import Babel, Domain
 
     app = Flask(__name__)
     domain = Domain(domain='myext')
@@ -281,7 +292,7 @@ To change the default domain in a request context, call the
 :meth:`~Domain.as_default` method from within the request context::
 
     from flask import Flask
-    from flask.ext.babelex import Babel, Domain, gettext
+    from flask_babelplus import Babel, Domain, gettext
 
     app = Flask(__name__)
     domain = Domain(domain='myext')
@@ -318,7 +329,7 @@ API
 ---
 
 This part of the documentation documents each and every public class or
-function from Flask-BabelEx.
+function from Flask-BabelPlus.
 
 Configuration
 `````````````
@@ -357,17 +368,32 @@ Datetime Functions
 Gettext Functions
 `````````````````
 
-.. autofunction:: gettext
+These are just shortcuts for the default Flask domain.
 
-.. autofunction:: ngettext
+.. function:: gettext
 
-.. autofunction:: pgettext
+Equivalent to :meth:`Domain.gettext`.
 
-.. autofunction:: npgettext
+.. function:: ngettext
 
-.. autofunction:: lazy_gettext
+Equivalent to :meth:`Domain.ngettext`.
 
-.. autofunction:: lazy_pgettext
+.. function:: pgettext
+
+Equivalent to :meth:`Domain.pgettext`.
+
+.. function:: npgettext
+
+Equivalent to :meth:`Domain.npgettext`.
+
+.. function:: lazy_gettext
+
+Equivalent to :meth:`Domain.lazy_gettext`.
+
+.. function:: lazy_pgettext
+
+Equivalent to :meth:`Domain.lazy_pgettext`.
+
 
 Low-Level API
 `````````````
@@ -375,7 +401,16 @@ Low-Level API
 .. autofunction:: refresh
 
 
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
 .. _Flask: http://flask.pocoo.org/
 .. _babel: http://babel.edgewall.org/
 .. _pytz: http://pytz.sourceforge.net/
 .. _speaklater: http://pypi.python.org/pypi/speaklater
+.. _Flask-BabelEx: https://github.com/mrjoes/flask-babelex
