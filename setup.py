@@ -39,7 +39,7 @@ from setuptools import setup
 
 setup(
     name='Flask-BabelPlus',
-    version='1.0.0',
+    version='1.0.1',
     url='https://github.com/sh4nks/flask-babelplus',
     license='BSD',
     author='Peter Justin',
@@ -47,6 +47,7 @@ setup(
     description='Adds i18n/l10n support to Flask applications',
     long_description=__doc__,
     packages=['flask_babelplus'],
+    include_package_data=True,
     zip_safe=False,
     platforms='any',
     install_requires=[
