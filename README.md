@@ -29,7 +29,7 @@ babel.init_app(app=app, default_domain=FlaskBBDomain(app))
 Links
 =====
 
-* [Documentation](https://packages.python.org/Flask-BabelEx>)
+* [Documentation](https://pythonhosted.org/Flask-BabelPlus/)
 * [Flask-BabelEx](https://github.com/mrjoes/flask-babelex)
-* [original Flask-Babel extension](https://github.com/python-babel/Flask-Babel)
+* [Original Flask-Babel Extension](https://github.com/python-babel/Flask-Babel)
 
