@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    flask.ext.babelex
-    ~~~~~~~~~~~~~~~~~
+    flask_babelplus
+    ~~~~~~~~~~~~~~~
 
     Implements i18n/l10n support for Flask applications based on Babel.
 
@@ -35,7 +35,7 @@ else:
     timezone = pytz.timezone
     UTC = pytz.UTC
 
-from flask_babelex._compat import string_types
+from flask_babelplus._compat import string_types
 
 _DEFAULT_LOCALE = Locale.parse('en')
 

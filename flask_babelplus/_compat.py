@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    flask.ext.babelex._compat
+    flask_babelplus._compat
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: (c) 2013 by Armin Ronacher, Daniel Neuhäuser.

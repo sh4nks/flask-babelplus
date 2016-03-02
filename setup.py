@@ -1,41 +1,52 @@
 """
-Flask-BabelEx
--------------
+Flask-BabelPlus
+---------------
 
 Adds i18n/l10n support to Flask applications with the help of the
 `Babel`_ library.
 
-This is fork of official Flask-Babel extension with following features:
+This is a fork of Flask-BabelEx which in turn is a fork of the official
+Flask-Babel extension. It is API compatible with both forks.
+
+It comes with following additional features:
 
 1. It is possible to use multiple language catalogs in one Flask application;
-2. Localization domains: your extension can package localization file(s) and use them
-   if necessary;
+2. Localization domains: your extension can package localization file(s) and
+   use them if necessary;
 3. Does not reload localizations for each request.
+
+The main difference to Flask-BabelEx is, that you can pass the
+localization ``Domain`` in the extensions initialization process.
+
+.. code:: python
+
+    # Flask-BabelPlus
+    babel.init_app(app=app, default_domain=FlaskBBDomain(app))
+
 
 Links
 `````
 
-* `documentation <http://packages.python.org/Flask-BabelEx>`_
-* `development version
-  <http://github.com/mrjoes/flask-babelex/zipball/master#egg=Flask-BabelEx-dev>`_
-* `original Flask-Babel extension <https://pypi.python.org/pypi/Flask-Babel>`_.
+* `Documentation <http://packages.python.org/Flask-BabelPlus>`_
+* `Flask-BabelEx <https://github.com/mrjoes/flask-babelex>`_
+* `original Flask-Babel <https://pypi.python.org/pypi/Flask-Babel>`_.
 
-.. _Babel: http://babel.edgewall.org/
+.. _Babel: https://github.com/python-babel/babel
 
 """
 from setuptools import setup
 
 
 setup(
-    name='Flask-BabelEx',
-    version='0.9.2',
-    url='http://github.com/mrjoes/flask-babelex',
+    name='Flask-BabelPlus',
+    version='1.0.0',
+    url='https://github.com/sh4nks/flask-babelplus',
     license='BSD',
-    author='Serge S. Koval',
-    author_email='serge.koval+github@gmail.com',
+    author='Peter Justin',
+    author_email='peter.justin@outlook.com',
     description='Adds i18n/l10n support to Flask applications',
     long_description=__doc__,
-    packages=['flask_babelex'],
+    packages=['flask_babelplus'],
     zip_safe=False,
     platforms='any',
     install_requires=[
