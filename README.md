@@ -1,6 +1,9 @@
 Flask-BabelPlus
 ===============
 
+[![Build Status](https://travis-ci.org/sh4nks/flask-babelplus.svg?branch=master)](https://travis-ci.org/sh4nks/flask-babelplus)
+[![PyPI Version](https://img.shields.io/pypi/v/Flask-BabelPlus.svg)](https://pypi.python.org/pypi/Flask-BabelPlus)
+
 Adds i18n/l10n support to Flask applications with the help of the
 [Babel](https://github.com/python-babel/babel) library.
 
