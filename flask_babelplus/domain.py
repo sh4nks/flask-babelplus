@@ -10,7 +10,6 @@
 """
 import os
 from babel import support
-from babel.support import NullTranslations
 
 from .utils import get_state, get_locale
 
@@ -49,7 +48,7 @@ class Domain(object):
         """
         state = get_state()
         if state is None:
-            return NullTranslations()
+            return support.NullTranslations()
 
         locale = get_locale()
         cache = self.get_translations_cache()
