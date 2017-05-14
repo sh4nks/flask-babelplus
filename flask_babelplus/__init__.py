@@ -10,7 +10,7 @@
 """
 from __future__ import absolute_import
 
-from .babel import Babel
+from .core import Babel
 from .domain import Domain, get_domain, \
     gettext, ngettext, pgettext, npgettext, lazy_gettext, lazy_pgettext
 from .utils import get_locale, get_timezone, refresh, \
