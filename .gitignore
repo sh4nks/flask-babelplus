@@ -5,3 +5,10 @@
 dist/
 docs/_build
 .tox/
+.idea/
+env/
+.venv/
+.eggs/
+htmlcov/
+.coverage
+.cache/

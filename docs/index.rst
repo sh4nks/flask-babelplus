@@ -145,7 +145,7 @@ Using Translations
 The other big part next to date formatting are translations.  For that,
 Flask uses :mod:`gettext` together with Babel.  The idea of gettext is
 that you can mark certain strings as translatable and a tool will pick all
-those app, collect them in a separate file for you to translate.  At
+those up, collect them in a separate file for you to translate.  At
 runtime the original strings (which should be English) will be replaced by
 the language you selected.
 
@@ -400,6 +400,7 @@ Low-Level API
 
 .. autofunction:: refresh
 
+.. autofunction:: force_locale
 
 Indices and tables
 ------------------

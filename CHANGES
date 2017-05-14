@@ -1,0 +1,20 @@
+Flask-BabelPlus Changelog
+=========================
+
+Version 2.0.0
+-------------
+
+to be released
+
+- Split the whole extension in multiple smaller files and
+  use a ``_BabelState`` object to safe the extensions state.
+- It is no longer possible to use the formatting utilities without
+  and initialized Flask-BabelPlus object.
+- Add ``force_locale`` function which can temporarily overrides the
+  currently selected locale.
+
+
+Previous Versions
+-----------------
+
+Prior to 1.6.0, no proper changelog was kept.

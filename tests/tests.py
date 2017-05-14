@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
-
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 import unittest
 from decimal import Decimal
 import flask
-from datetime import datetime
+from datetime import datetime, timedelta
 import flask_babelplus as babel
 from flask_babelplus import gettext, ngettext, lazy_gettext
 from flask_babelplus._compat import text_type
@@ -18,13 +13,16 @@ class DateFormattingTestCase(unittest.TestCase):
 
     def test_basics(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app)
+        babel.Babel(app)
         d = datetime(2010, 4, 12, 13, 46)
+        delta = timedelta(days=6)
 
         with app.test_request_context():
             assert babel.format_datetime(d) == 'Apr 12, 2010, 1:46:00 PM'
             assert babel.format_date(d) == 'Apr 12, 2010'
             assert babel.format_time(d) == '1:46:00 PM'
+            assert babel.format_timedelta(delta) == '1 week'
+            assert babel.format_timedelta(delta, threshold=1) == '6 days'
 
         with app.test_request_context():
             app.config['BABEL_DEFAULT_TIMEZONE'] = 'Europe/Vienna'
@@ -84,6 +82,7 @@ class DateFormattingTestCase(unittest.TestCase):
         @b.localeselector
         def select_locale():
             return the_locale
+
         @b.timezoneselector
         def select_timezone():
             return the_timezone
@@ -99,7 +98,7 @@ class DateFormattingTestCase(unittest.TestCase):
 
     def test_refreshing(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app)
+        babel.Babel(app)
         d = datetime(2010, 4, 12, 13, 46)
         with app.test_request_context():
             assert babel.format_datetime(d) == 'Apr 12, 2010, 1:46:00 PM'
@@ -107,18 +106,26 @@ class DateFormattingTestCase(unittest.TestCase):
             babel.refresh()
             assert babel.format_datetime(d) == 'Apr 12, 2010, 3:46:00 PM'
 
-    def test_non_initialized(self):
+    def test_force_locale(self):
         app = flask.Flask(__name__)
-        d = datetime(2010, 4, 12, 13, 46)
+        b = babel.Babel(app)
+
+        @b.localeselector
+        def select_locale():
+            return 'de_DE'
+
         with app.test_request_context():
-            assert babel.format_datetime(d) == 'Apr 12, 2010, 1:46:00 PM'
+            assert str(babel.get_locale()) == 'de_DE'
+            with babel.force_locale('en_US'):
+                assert str(babel.get_locale()) == 'en_US'
+            assert str(babel.get_locale()) == 'de_DE'
 
 
 class NumberFormattingTestCase(unittest.TestCase):
 
     def test_basics(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app)
+        babel.Babel(app)
         n = 1099
 
         with app.test_request_context():
@@ -133,23 +140,24 @@ class GettextTestCase(unittest.TestCase):
 
     def test_basics(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app, default_locale='de_DE')
+        babel.Babel(app, default_locale='de_DE')
 
         with app.test_request_context():
             assert gettext(u'Hello %(name)s!', name='Peter') == 'Hallo Peter!'
-            assert ngettext(u'%(num)s Apple', u'%(num)s Apples', 3) == u'3 Äpfel'
-            assert ngettext(u'%(num)s Apple', u'%(num)s Apples', 1) == u'1 Apfel'
+            assert ngettext(u'%(num)s Apple', u'%(num)s Apples', 3) == u'3 Äpfel'  # noqa
+            assert ngettext(u'%(num)s Apple', u'%(num)s Apples', 1) == u'1 Apfel'  # noqa
 
     def test_template_basics(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app, default_locale='de_DE')
+        babel.Babel(app, default_locale='de_DE')
 
-        t = lambda x: flask.render_template_string('{{ %s }}' % x)
+        def t(x):
+            return flask.render_template_string('{{ %s }}' % x)
 
         with app.test_request_context():
-            assert t("gettext('Hello %(name)s!', name='Peter')") == 'Hallo Peter!'
-            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 3)") == u'3 Äpfel'
-            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 1)") == u'1 Apfel'
+            assert t("gettext('Hello %(name)s!', name='Peter')") == 'Hallo Peter!'  # noqa
+            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 3)") == u'3 Äpfel'  # noqa
+            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 1)") == u'1 Apfel'  # noqa
             assert flask.render_template_string('''
                 {% trans %}Hello {{ name }}!{% endtrans %}
             ''', name='Peter').strip() == 'Hallo Peter!'
@@ -160,7 +168,7 @@ class GettextTestCase(unittest.TestCase):
 
     def test_lazy_gettext(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app, default_locale='de_DE')
+        babel.Babel(app, default_locale='de_DE')
         yes = lazy_gettext(u'Yes')
         with app.test_request_context():
             assert text_type(yes) == 'Ja'
@@ -168,10 +176,22 @@ class GettextTestCase(unittest.TestCase):
         with app.test_request_context():
             assert text_type(yes) == 'Yes'
 
+    def test_no_formatting(self):
+        """
+        Ensure we don't format strings unless a variable is passed.
+        """
+        app = flask.Flask(__name__)
+        babel.Babel(app)
+
+        with app.test_request_context():
+            assert gettext(u'Test %s') == u'Test %s'
+            assert gettext(u'Test %(name)s', name=u'test') == u'Test test'
+            assert gettext(u'Test %s') % 'test' == u'Test test'
+
     def test_lazy_gettext_defaultdomain(self):
         app = flask.Flask(__name__)
         domain = babel.Domain(domain='test')
-        b = babel.Babel(app, default_locale='de_DE', default_domain=domain)
+        babel.Babel(app, default_locale='de_DE', default_domain=domain)
         first = lazy_gettext('first')
         with app.test_request_context():
             assert text_type(first) == 'erste'
@@ -182,13 +202,17 @@ class GettextTestCase(unittest.TestCase):
     def test_list_translations(self):
         app = flask.Flask(__name__)
         b = babel.Babel(app, default_locale='de_DE')
-        translations = b.list_translations()
-        assert len(translations) == 1
-        assert str(translations[0]) == 'de'
+
+        # an app_context is automatically created when a request context
+        # is pushed if necessary
+        with app.test_request_context():
+            translations = b.list_translations()
+            assert len(translations) == 1
+            assert str(translations[0]) == 'de'
 
     def test_domain(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app, default_locale='de_DE')
+        babel.Babel(app, default_locale='de_DE')
         domain = babel.Domain(domain='test')
 
         with app.test_request_context():
@@ -197,7 +221,7 @@ class GettextTestCase(unittest.TestCase):
 
     def test_as_default(self):
         app = flask.Flask(__name__)
-        b = babel.Babel(app, default_locale='de_DE')
+        babel.Babel(app, default_locale='de_DE')
         domain = babel.Domain(domain='test')
 
         with app.test_request_context():
@@ -208,30 +232,25 @@ class GettextTestCase(unittest.TestCase):
     def test_default_domain(self):
         app = flask.Flask(__name__)
         domain = babel.Domain(domain='test')
-        b = babel.Babel(app, default_locale='de_DE', default_domain=domain)
+        babel.Babel(app, default_locale='de_DE', default_domain=domain)
 
         with app.test_request_context():
             assert babel.gettext('first') == 'erste'
 
-    def test_non_initialized(self):
-        app = flask.Flask(__name__)
-        with app.test_request_context():
-            assert babel.gettext('first') == 'first'
-
     def test_multiple_apps(self):
         app1 = flask.Flask(__name__)
-        b1 = babel.Babel(app1, default_locale='de_DE')
+        babel.Babel(app1, default_locale='de_DE')
 
         app2 = flask.Flask(__name__)
-        b2 = babel.Babel(app2, default_locale='de_DE')
+        babel.Babel(app2, default_locale='de_DE')
 
         with app1.test_request_context():
             assert babel.gettext('Yes') == 'Ja'
-
-            assert 'de_DE' in b1._default_domain.cache
+            assert 'de_DE' in app1.extensions["babel"].domain.cache
 
         with app2.test_request_context():
-            assert 'de_DE' not in b2._default_domain.cache
+            assert 'de_DE' not in app2.extensions["babel"].domain.cache
+
 
 if __name__ == '__main__':
     unittest.main()
