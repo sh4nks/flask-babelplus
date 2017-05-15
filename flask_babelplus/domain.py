@@ -46,7 +46,8 @@ class Domain(object):
         object if used outside of the request or if a translation cannot be
         found.
         """
-        state = get_state()
+        state = get_state(silent=True)
+
         if state is None:
             return support.NullTranslations()
 
@@ -75,11 +76,9 @@ class Domain(object):
             gettext(u'Hello %(name)s!', name='World')
         """
         t = self.get_translations()
-        if t is None:
-            return string if not variables else string % variables
-
-        s = t.ugettext(string)
-        return s if not variables else s % variables
+        if variables:
+            return t.ugettext(string) % variables
+        return t.ugettext(string)
 
     def ngettext(self, singular, plural, num, **variables):
         """Translates a string with the current locale and passes in the
@@ -95,24 +94,27 @@ class Domain(object):
         """
         variables.setdefault('num', num)
         t = self.get_translations()
-        if t is None:
-            s = singular if num == 1 else plural
-            return s if not variables else s % variables
-
-        s = t.ungettext(singular, plural, num)
-        return s if not variables else s % variables
+        return t.ungettext(singular, plural, num) % variables
 
     def pgettext(self, context, string, **variables):
         """Like :func:`gettext` but with a context.
 
+        Gettext uses the ``msgctxt`` notation to distinguish different
+        contexts for the same ``msgid``
+
+        For example::
+
+            pgettext(u'Button label', 'Log in')
+
+        Learn more about contexts here:
+        https://www.gnu.org/software/gettext/manual/html_node/Contexts.html
+
         .. versionadded:: 0.7
         """
         t = self.get_translations()
-        if t is None:
-            return string if not variables else string % variables
-
-        s = t.upgettext(context, string)
-        return s if not variables else s % variables
+        if variables:
+            return t.upgettext(context, string) % variables
+        return t.upgettext(context, string)
 
     def npgettext(self, context, singular, plural, num, **variables):
         """Like :func:`ngettext` but with a context.
@@ -121,12 +123,7 @@ class Domain(object):
         """
         variables.setdefault('num', num)
         t = self.get_translations()
-        if t is None:
-            s = singular if num == 1 else plural
-            return s if not variables else s % variables
-
-        s = t.unpgettext(context, singular, plural, num)
-        return s if not variables else s % variables
+        return t.unpgettext(context, singular, plural, num) % variables
 
     def lazy_gettext(self, string, **variables):
         """Like :func:`gettext` but the string returned is lazy which means
@@ -167,7 +164,11 @@ def get_domain():
     e.g. "messages" in <approot>/translations" if none is set for this
     request.
     """
-    return get_state().domain
+    state = get_state(silent=True)
+    if state is None:
+        return domain
+
+    return state.domain
 
 
 # Create shortcuts for the default Flask domain

@@ -24,17 +24,23 @@ else:
 from ._compat import string_types
 
 
-def get_state(app=None):
+def get_state(app=None, silent=False):
     """Gets the application-specific babel data.
 
     :param app: The Flask application. Defaults to the current app.
+    :param silent: If set to True, it will return ``None`` instead of raising
+                   a ``RuntimeError``.
     """
     if app is None:
         app = current_app
 
-    assert 'babel' in app.extensions, \
-        'The babel extension was not registered to the current application. ' \
-        'Please make sure to call init_app() first.'
+    if silent and (not app or 'babel' not in app.extensions):
+        return None
+
+    if 'babel' not in app.extensions:
+        raise RuntimeError("The babel extension was not registered to the "
+                           "current application. Please make sure to call "
+                           "init_app() first.")
 
     return app.extensions['babel']
 
