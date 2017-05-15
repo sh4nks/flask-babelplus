@@ -42,7 +42,7 @@ from setuptools.command.test import test as TestCommand
 
 
 class PyTestCommand(TestCommand):
-    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
+    user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
 
     def initialize_options(self):
         TestCommand.initialize_options(self)
@@ -60,13 +60,15 @@ class PyTestCommand(TestCommand):
 
 
 with open('flask_babelplus/__init__.py', 'rb') as f:
-    version_line = re.search(r'__version__\s+=\s+(.*)', f.read().decode('utf-8')).group(1)
+    version_line = re.search(
+        r'__version__\s+=\s+(.*)', f.read().decode('utf-8')
+    ).group(1)
     version = str(ast.literal_eval(version_line))
 
 
 setup(
     name='Flask-BabelPlus',
-    version='2.0.0',
+    version=version,
     url='https://github.com/sh4nks/flask-babelplus',
     license='BSD',
     author='Peter Justin',

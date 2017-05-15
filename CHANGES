@@ -4,7 +4,7 @@ Flask-BabelPlus Changelog
 Version 2.0.0
 -------------
 
-to be released
+Released on May 15th 2017.
 
 - Split the whole extension in multiple smaller files and
   use a ``_BabelState`` object to safe the extensions state.
