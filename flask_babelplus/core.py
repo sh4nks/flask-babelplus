@@ -15,7 +15,7 @@ try:
 except ImportError:
     from pytz import timezone
 else:
-    timezone = pytz.timezone
+    timezone = pytz.timezone  # pragma: no cover
 
 from .constants import DEFAULT_LOCALE, DEFAULT_TIMEZONE,\
     DEFAULT_DATE_FORMATS

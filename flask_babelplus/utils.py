@@ -17,7 +17,7 @@ try:
     from pytz.gae import pytz
 except ImportError:
     from pytz import timezone, UTC
-else:
+else:  # pragma: no cover
     timezone = pytz.timezone
     UTC = pytz.UTC
 
@@ -114,7 +114,7 @@ def refresh():
     return English text and a now German page.
     """
     ctx = _get_current_context()
-    for key in 'babel_locale', 'babel_tzinfo':
+    for key in ('babel_locale', 'babel_tzinfo'):
         if hasattr(ctx, key):
             delattr(ctx, key)
 
@@ -156,7 +156,7 @@ def force_locale(locale):
             setattr(ctx, key, value)
 
 
-def _get_format(key, format):
+def _get_format(key, format=None):
     """A small helper for the datetime formatting functions.  Looks up
     format defaults for different kinds.
     """

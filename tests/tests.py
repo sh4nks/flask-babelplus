@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import with_statement
 import unittest
+import pytest
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from babel import support
+from pytz import timezone, UTC
+from babel import support, Locale
 import flask
 
 import flask_babelplus as babel_ext
 from flask_babelplus import gettext, ngettext, pgettext, npgettext, \
     lazy_gettext, lazy_pgettext
 from flask_babelplus._compat import text_type
+from flask_babelplus.utils import get_state, _get_format
 
 
 class DateFormattingTestCase(unittest.TestCase):
@@ -70,10 +73,18 @@ class DateFormattingTestCase(unittest.TestCase):
         b = babel_ext.Babel(app)
         b.date_formats['datetime'] = 'long'
         b.date_formats['datetime.long'] = 'MMMM d, yyyy h:mm:ss a'
+
+        b.date_formats['date'] = 'long'
+        b.date_formats['date.short'] = 'MM d'
+
         d = datetime(2010, 4, 12, 13, 46)
 
         with app.test_request_context():
             assert babel_ext.format_datetime(d) == 'April 12, 2010 3:46:00 AM'
+            assert _get_format('datetime') == 'MMMM d, yyyy h:mm:ss a'
+            # none; returns the format
+            assert _get_format('datetime', 'medium') == 'medium'
+            assert _get_format('date', 'short') == 'MM d'
 
     def test_custom_locale_selector(self):
         app = flask.Flask(__name__)
@@ -104,6 +115,7 @@ class DateFormattingTestCase(unittest.TestCase):
         app = flask.Flask(__name__)
         babel_ext.Babel(app)
         d = datetime(2010, 4, 12, 13, 46)
+        babel_ext.refresh()  # nothing should be refreshed (see case below)
         with app.test_request_context():
             assert babel_ext.format_datetime(d) == 'Apr 12, 2010, 1:46:00 PM'
             app.config['BABEL_DEFAULT_TIMEZONE'] = 'Europe/Vienna'
@@ -117,6 +129,9 @@ class DateFormattingTestCase(unittest.TestCase):
         @b.localeselector
         def select_locale():
             return 'de_DE'
+
+        with babel_ext.force_locale('en_US'):
+            assert babel_ext.get_locale() is None
 
         with app.test_request_context():
             assert str(babel_ext.get_locale()) == 'de_DE'
@@ -230,6 +245,12 @@ class GettextTestCase(unittest.TestCase):
             assert text_type(first) == 'Hello Guest!'
             assert text_type(domain_first) == 'Hello Guest!'
 
+    def test_no_ctx_gettext(self):
+        app = flask.Flask(__name__)
+        babel_ext.Babel(app, default_locale='de_DE')
+        domain = babel_ext.get_domain()
+        assert domain.gettext('Yes') == 'Yes'
+
     def test_list_translations(self):
         app = flask.Flask(__name__)
         b = babel_ext.Babel(app, default_locale='de_DE')
@@ -240,6 +261,14 @@ class GettextTestCase(unittest.TestCase):
             translations = b.list_translations()
             assert len(translations) == 1
             assert str(translations[0]) == 'de'
+
+    def test_get_translations(self):
+        app = flask.Flask(__name__)
+        babel_ext.Babel(app, default_locale='de_DE')
+        domain = babel_ext.get_domain()  # using default domain
+
+        # no app context
+        assert isinstance(domain.get_translations(), support.NullTranslations)
 
     def test_domain(self):
         app = flask.Flask(__name__)
@@ -283,29 +312,73 @@ class GettextTestCase(unittest.TestCase):
             assert 'de_DE' not in app2.extensions["babel"].domain.cache
 
 
-class DomainTestCase(unittest.TestCase):
-
-    def test_get_translations(self):
+class IntegrationTestCase(unittest.TestCase):
+    def test_configure_jinja(self):
         app = flask.Flask(__name__)
-        babel_ext.Babel(app, default_locale='de_DE')
-        domain = babel_ext.get_domain()  # using default domain
+        babel_ext.Babel(app, configure_jinja=False)
+        assert not app.jinja_env.filters.get("scientificformat")
 
-        # no app context
-        assert isinstance(domain.get_translations(), support.NullTranslations)
+    def test_get_state(self):
+        # app = None; app.extensions = False; babel = False; silent = True;
+        assert get_state(silent=True) is None
 
-    def test_no_ctx_gettext(self):
         app = flask.Flask(__name__)
-        babel_ext.Babel(app, default_locale='de_DE')
-        domain = babel_ext.get_domain()
+        with pytest.raises(RuntimeError):
+            with app.test_request_context():
+                # app = app; silent = False
+                # babel not in app.extensions
+                get_state()
 
-        assert domain.gettext('Yes') == 'Yes'
+        # same as above, just silent
+        with app.test_request_context():
+            assert get_state(app=app, silent=True) is None
 
-    def test_lazy_old_style_formatting(self):
-        lazy_string = lazy_gettext(u'Hello %(name)s')
-        assert lazy_string % {u'name': u'test'} == u'Hello test'
+        babel_ext.Babel(app)
+        with app.test_request_context():
+            # should use current_app
+            assert get_state(app=None, silent=True) == app.extensions['babel']
 
-        lazy_string = lazy_gettext(u'test')
-        assert u'Hello %s' % lazy_string == u'Hello test'
+    def test_get_locale(self):
+        assert babel_ext.get_locale() is None
+
+        app = flask.Flask(__name__)
+        babel_ext.Babel(app)
+        with app.app_context():
+            assert babel_ext.get_locale() == Locale.parse("en")
+
+    def test_get_timezone_none(self):
+        assert babel_ext.get_timezone() is None
+
+        app = flask.Flask(__name__)
+        b = babel_ext.Babel(app)
+
+        @b.timezoneselector
+        def tz_none():
+            return None
+        with app.test_request_context():
+            assert babel_ext.get_timezone() == UTC
+
+    def test_get_timezone_vienna(self):
+        app = flask.Flask(__name__)
+        b = babel_ext.Babel(app)
+
+        @b.timezoneselector
+        def tz_vienna():
+            return timezone('Europe/Vienna')
+        with app.test_request_context():
+            assert babel_ext.get_timezone() == timezone('Europe/Vienna')
+
+    def test_convert_timezone(self):
+        app = flask.Flask(__name__)
+        babel_ext.Babel(app)
+        dt = datetime(2010, 4, 12, 13, 46)
+
+        with app.test_request_context():
+            dt_utc = babel_ext.to_utc(dt)
+            assert dt_utc.tzinfo is None
+
+            dt_usertz = babel_ext.to_user_timezone(dt_utc)
+            assert dt_usertz is not None
 
 
 if __name__ == '__main__':
