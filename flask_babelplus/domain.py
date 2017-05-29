@@ -12,6 +12,7 @@ import os
 from babel import support
 
 from .utils import get_state, get_locale
+from .speaklater import LazyString
 
 
 class Domain(object):
@@ -137,8 +138,7 @@ class Domain(object):
             def index():
                 return unicode(hello)
         """
-        from speaklater import make_lazy_string
-        return make_lazy_string(self.gettext, string, **variables)
+        return LazyString(self.gettext, string, **variables)
 
     def lazy_pgettext(self, context, string, **variables):
         """Like :func:`pgettext` but the string returned is lazy which means
@@ -146,8 +146,7 @@ class Domain(object):
 
         .. versionadded:: 0.7
         """
-        from speaklater import make_lazy_string
-        return make_lazy_string(self.pgettext, context, string, **variables)
+        return LazyString(self.pgettext, context, string, **variables)
 
 
 # This is the domain that will be used if there is no request context
@@ -190,10 +189,8 @@ def npgettext(*args, **kwargs):
 
 
 def lazy_gettext(*args, **kwargs):
-    from speaklater import make_lazy_string
-    return make_lazy_string(gettext, *args, **kwargs)
+    return LazyString(gettext, *args, **kwargs)
 
 
 def lazy_pgettext(*args, **kwargs):
-    from speaklater import make_lazy_string
-    return make_lazy_string(pgettext, *args, **kwargs)
+    return LazyString(pgettext, *args, **kwargs)
