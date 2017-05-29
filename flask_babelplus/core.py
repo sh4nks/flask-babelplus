@@ -113,8 +113,6 @@ class Babel(object):
 
         This has to return the locale as string (eg: ``'de_AT'``, ''`en_US`'')
         """
-        assert self.locale_selector_func is None, \
-            'a localeselector function is already registered'
         self.locale_selector_func = f
         return f
 
@@ -126,8 +124,6 @@ class Babel(object):
 
         This has to return the timezone as string (eg: ``'Europe/Vienna'``)
         """
-        assert self.timezone_selector_func is None, \
-            'a timezoneselector function is already registered'
         self.timezone_selector_func = f
         return f
 
