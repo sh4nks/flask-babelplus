@@ -1,22 +1,22 @@
-.PHONY: clean-pyc test upload-docs
-
-all: clean-pyc test
+.PHONY: text tox clean wheel upload docs
 
 test:
-	@cd tests; python tests.py
+	pytest
 
-tox-test:
+tox:
 	@tox
 
-clean-pyc:
+clean:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
+	find . -name '__pycache__' -exec rm -rf {} +
 
-clean: clean-pyc
+wheel:
+	python setup.py bdist_wheel
 
-upload-docs:
+upload:
+	twine upload dist/* --skip-existing
+
+docs:
 	$(MAKE) -C docs html
-	python setup.py upload_docs
-
-.PHONY: upload-docs clean-pyc clean tox-test test all
