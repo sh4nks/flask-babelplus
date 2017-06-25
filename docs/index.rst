@@ -9,10 +9,6 @@ any Flask application with the help of `babel`_, `pytz`_ and
 support as well as a very simple and friendly interface to :mod:`gettext`
 translations.
 
-.. contents::
-   :local:
-   :backlinks: none
-
 
 Installation
 ------------
