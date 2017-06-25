@@ -398,11 +398,16 @@ Low-Level API
 
 .. autofunction:: force_locale
 
-Indices and tables
-------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
+Additional Information
+----------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   changelog
+   license
+
 * :ref:`search`
 
 
