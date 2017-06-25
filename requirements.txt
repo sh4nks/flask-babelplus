@@ -1,0 +1,6 @@
+Flask
+Werkzeug
+Jinja2
+Sphinx
+pytest
+pytest-cov
