@@ -63,7 +63,7 @@ class Domain(object):
                 locale,
                 domain=self.domain
             )
-            cache[str(locale)] = translations
+            self.cache[str(locale)] = translations
 
         return translations
 
