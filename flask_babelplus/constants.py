@@ -9,7 +9,7 @@
     :copyright: (c) 2013 by Armin Ronacher, Daniel Neuhäuser and contributors.
     :license: BSD, see LICENSE for more details.
 """
-from werkzeug import ImmutableDict
+from werkzeug.datastructures import ImmutableDict
 
 DEFAULT_LOCALE = "en"
 DEFAULT_TIMEZONE = "UTC"
