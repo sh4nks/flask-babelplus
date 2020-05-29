@@ -79,7 +79,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'Flask>=0.9',
+        'Flask>=1.0',
+        'Werkzeug>=1.0',
         'Babel>=1.0',
         'Jinja2>=2.5'
     ],

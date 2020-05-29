@@ -1,6 +1,14 @@
 Flask-BabelPlus Changelog
 =========================
 
+Version 2.1.2
+-------------
+
+Released on May 29th 2020.
+
+- Fix werkzeug import error ``from werkzeug import ImmutableDict``. PR #3.
+
+
 Version 2.1.1
 -------------
 
