@@ -12,3 +12,7 @@ env/
 htmlcov/
 .coverage
 .cache/
+build/
+*.sublime-project
+*.sublime-workspace
+.vscode
