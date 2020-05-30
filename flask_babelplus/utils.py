@@ -21,8 +21,6 @@ else:  # pragma: no cover
     timezone = pytz.timezone
     UTC = pytz.UTC
 
-from ._compat import string_types
-
 
 def get_state(app=None, silent=False):
     """Gets the application-specific babel data.
@@ -90,7 +88,7 @@ def get_timezone():
             if rv is None:
                 tzinfo = state.babel.default_timezone
             else:
-                if isinstance(rv, string_types):
+                if isinstance(rv, str):
                     tzinfo = timezone(rv)
                 else:
                     tzinfo = rv
@@ -288,7 +286,7 @@ def format_number(number):
     :rtype: unicode
     """
     locale = get_locale()
-    return numbers.format_number(number, locale=locale)
+    return numbers.format_decimal(number, locale=locale)
 
 
 def format_decimal(number, format=None):

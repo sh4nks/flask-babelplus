@@ -12,7 +12,6 @@ import flask
 import flask_babelplus as babel_ext
 from flask_babelplus import gettext, ngettext, pgettext, npgettext, \
     lazy_gettext, lazy_pgettext
-from flask_babelplus._compat import text_type
 from flask_babelplus.utils import get_state, _get_format
 
 
@@ -196,10 +195,10 @@ class GettextTestCase(unittest.TestCase):
         babel_ext.Babel(app, default_locale='de_DE')
         yes = lazy_gettext(u'Yes')
         with app.test_request_context():
-            assert text_type(yes) == 'Ja'
+            assert str(yes) == 'Ja'
         app.config['BABEL_DEFAULT_LOCALE'] = 'en_US'
         with app.test_request_context():
-            assert text_type(yes) == 'Yes'
+            assert str(yes) == 'Yes'
 
     def test_no_formatting(self):
         """
@@ -221,13 +220,13 @@ class GettextTestCase(unittest.TestCase):
         domain_first = domain.lazy_gettext('first')
 
         with app.test_request_context():
-            assert text_type(domain_first) == 'erste'
-            assert text_type(first) == 'erste'
+            assert str(domain_first) == 'erste'
+            assert str(first) == 'erste'
 
         app.config['BABEL_DEFAULT_LOCALE'] = 'en_US'
         with app.test_request_context():
-            assert text_type(first) == 'first'
-            assert text_type(domain_first) == 'first'
+            assert str(first) == 'first'
+            assert str(domain_first) == 'first'
 
     def test_lazy_pgettext(self):
         app = flask.Flask(__name__)
@@ -237,13 +236,13 @@ class GettextTestCase(unittest.TestCase):
         domain_first = domain.lazy_pgettext('button', 'Hello Guest!')
 
         with app.test_request_context():
-            assert text_type(domain_first) == 'Hallo Gast!'
-            assert text_type(first) == 'Hallo Gast!'
+            assert str(domain_first) == 'Hallo Gast!'
+            assert str(first) == 'Hallo Gast!'
 
         app.config['BABEL_DEFAULT_LOCALE'] = 'en_US'
         with app.test_request_context():
-            assert text_type(first) == 'Hello Guest!'
-            assert text_type(domain_first) == 'Hello Guest!'
+            assert str(first) == 'Hello Guest!'
+            assert str(domain_first) == 'Hello Guest!'
 
     def test_no_ctx_gettext(self):
         app = flask.Flask(__name__)
