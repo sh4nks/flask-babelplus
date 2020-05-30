@@ -80,9 +80,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'Flask>=1.0',
-        'Werkzeug>=1.0',
         'Babel>=2.0',
-        'Jinja2>=2.5'
     ],
     tests_require=[
         "py",
@@ -90,7 +88,7 @@ setup(
         "pytest-cov"
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
