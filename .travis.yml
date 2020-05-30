@@ -1,20 +1,19 @@
 sudo: false
 language: python
 python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
 env:
   - DEPS=lowest
   - DEPS=release
   - DEPS=devel
 install:
   - '[[ "$DEPS" == "lowest" ]] && pip install jinja2==2.8 || :'
-  - '[[ "$DEPS" == "lowest" ]] && pip install flask==0.11 || :'
-  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/jinja2.git || :'
-  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/mitsuhiko/flask.git || :'
+  - '[[ "$DEPS" == "lowest" ]] && pip install flask==1.0 || :'
+  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/jinja2.git || :'
+  - '[[ "$DEPS" == "devel" ]] && pip install git+https://github.com/pallets/flask.git || :'
   - pip install pytest pytest-cov pytest-pep8 coveralls
 script:
   - python setup.py develop

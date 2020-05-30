@@ -81,7 +81,7 @@ setup(
     install_requires=[
         'Flask>=1.0',
         'Werkzeug>=1.0',
-        'Babel>=1.0',
+        'Babel>=2.0',
         'Jinja2>=2.5'
     ],
     tests_require=[
