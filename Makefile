@@ -1,4 +1,4 @@
-.PHONY: text tox clean wheel upload docs
+.PHONY: test tox clean wheel upload docs
 
 test:
 	pytest
@@ -13,7 +13,7 @@ clean:
 	find . -name '__pycache__' -exec rm -rf {} +
 
 wheel:
-	python setup.py bdist_wheel
+	python setup.py sdist bdist_wheel
 
 upload:
 	twine upload dist/* --skip-existing
