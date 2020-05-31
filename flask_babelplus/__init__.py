@@ -19,7 +19,7 @@ from .utils import get_locale, get_timezone, refresh, \
     format_currency, format_percent, format_scientific
 
 
-__version__ = '2.1.2'
+__version__ = '2.2.0'
 __all__ = (
     'Babel', 'Domain', 'get_domain', 'gettext', 'ngettext', 'pgettext',
     'npgettext', 'lazy_gettext', 'lazy_pgettext', 'get_locale', 'get_timezone',
