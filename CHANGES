@@ -1,6 +1,15 @@
 Flask-BabelPlus Changelog
 =========================
 
+Version 2.2.0
+
+Released on May 31th 2020.
+
+- Dropped support for Python 2.7, 3.3 and 3.4
+- Fixed a Babel deprecation warning for using ``format_numbers`` instead of
+  ``format_decimal``
+
+
 Version 2.1.2
 -------------
 
