@@ -1,7 +1,18 @@
 Flask-BabelPlus Changelog
 =========================
 
+Version 2.3.0
+-------------
+
+Unreleased
+
+- Add a lazy method for ngettext named ``lazy_ngettext``.
+- Remove the pytz.gae reference as ``pytz`` is available in the standard
+  Python environment on the Google App Engine.
+
+
 Version 2.2.0
+-------------
 
 Released on May 31th 2020.
 
