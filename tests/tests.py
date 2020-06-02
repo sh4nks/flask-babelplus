@@ -11,7 +11,7 @@ import flask
 
 import flask_babelplus as babel_ext
 from flask_babelplus import gettext, ngettext, pgettext, npgettext, \
-    lazy_gettext, lazy_pgettext
+    lazy_gettext, lazy_pgettext, lazy_ngettext
 from flask_babelplus.utils import get_state, _get_format
 
 
@@ -243,6 +243,23 @@ class GettextTestCase(unittest.TestCase):
         with app.test_request_context():
             assert str(first) == 'Hello Guest!'
             assert str(domain_first) == 'Hello Guest!'
+
+    def test_lazy_ngettext(self):
+        app = flask.Flask(__name__)
+        domain = babel_ext.Domain(domain='messages')
+        babel_ext.Babel(app, default_locale='de_DE')
+
+        one_apple = lazy_ngettext(u'%(num)s Apple', u'%(num)s Apples', 1)
+        one_apple_d = domain.lazy_ngettext(u'%(num)s Apple', u'%(num)s Apples', 1)  # noqa
+        with app.test_request_context():
+            assert str(one_apple) == '1 Apfel'
+            assert str(one_apple_d) == '1 Apfel'
+
+        two_apples = lazy_ngettext(u'%(num)s Apple', u'%(num)s Apples', 2)
+        two_apples_d = domain.lazy_ngettext(u'%(num)s Apple', u'%(num)s Apples', 2)  # noqa
+        with app.test_request_context():
+            assert str(two_apples) == u'2 Äpfel'
+            assert str(two_apples_d) == u'2 Äpfel'
 
     def test_no_ctx_gettext(self):
         app = flask.Flask(__name__)

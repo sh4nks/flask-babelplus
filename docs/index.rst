@@ -386,6 +386,10 @@ Equivalent to :meth:`Domain.npgettext`.
 
 Equivalent to :meth:`Domain.lazy_gettext`.
 
+.. function:: lazy_ngettext
+
+Equivalent to :meth:`Domain.lazy_ngettext`.
+
 .. function:: lazy_pgettext
 
 Equivalent to :meth:`Domain.lazy_pgettext`.
@@ -414,5 +418,5 @@ Additional Information
 .. _Flask: http://flask.pocoo.org/
 .. _babel: http://babel.edgewall.org/
 .. _pytz: http://pytz.sourceforge.net/
-.. _speaklater: http://pypi.python.org/pypi/speaklater
+.. _speaklater: https://github.com/sh4nks/flask-babelplus/blob/master/flask_babelplus/speaklater.py
 .. _Flask-BabelEx: https://github.com/mrjoes/flask-babelex
