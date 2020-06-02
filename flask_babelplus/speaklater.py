@@ -5,7 +5,6 @@
 
     Copied over from Flask-Babel which copied it from 'speaklater'
     and included some fixes.
-
     See:
       - https://github.com/python-babel/flask-babel/blob/master/flask_babel/speaklater.py
       - https://github.com/mitsuhiko/speaklater/blob/master/speaklater.py

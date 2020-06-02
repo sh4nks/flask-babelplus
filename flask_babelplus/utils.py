@@ -9,17 +9,12 @@
     :copyright: (c) 2013 by Armin Ronacher, Daniel Neuhäuser and contributors.
     :license: BSD, see LICENSE for more details.
 """
-from datetime import datetime
 from contextlib import contextmanager
+from datetime import datetime
+
+from pytz import UTC, timezone
 from babel import dates, numbers
 from flask import current_app, has_request_context, request
-try:
-    from pytz.gae import pytz
-except ImportError:
-    from pytz import timezone, UTC
-else:  # pragma: no cover
-    timezone = pytz.timezone
-    UTC = pytz.UTC
 
 
 def get_state(app=None, silent=False):
@@ -198,7 +193,7 @@ def format_datetime(datetime=None, format=None, rebase=True):
     time.
 
     The format parameter can either be ``'short'``, ``'medium'``,
-    ``'long'`` or ``'full'`` (in which cause the language's default for
+    ``'long'`` or ``'full'`` (in which case the language's default for
     that setting is used, or the default from the :attr:`Babel.date_formats`
     mapping is used) or a format string as documented by Babel.
 

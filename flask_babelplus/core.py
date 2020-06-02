@@ -9,20 +9,16 @@
     :license: BSD, see LICENSE for more details.
 """
 import os
-from babel import Locale
-try:
-    from pytz.gae import pytz
-except ImportError:
-    from pytz import timezone
-else:
-    timezone = pytz.timezone  # pragma: no cover
 
-from .constants import DEFAULT_LOCALE, DEFAULT_TIMEZONE,\
-    DEFAULT_DATE_FORMATS
+from babel import Locale
+from pytz import timezone
+
+from .constants import DEFAULT_DATE_FORMATS, DEFAULT_LOCALE, DEFAULT_TIMEZONE
 from .domain import Domain, get_domain
-from .utils import format_datetime, format_date, format_time, \
-    format_timedelta, format_number, format_decimal, format_currency, \
-    format_percent, format_scientific, get_state
+from .utils import (format_currency, format_date, format_datetime,
+                    format_decimal, format_number, format_percent,
+                    format_scientific, format_time, format_timedelta,
+                    get_state)
 
 
 class Babel(object):
