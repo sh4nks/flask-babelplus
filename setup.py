@@ -79,6 +79,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
+        'pytz>=2020.1',
         'Flask>=1.0',
         'Babel>=2.0',
     ],
