@@ -1,0 +1,89 @@
+[project]
+name = "Flask-BabelPlus"
+version = "2.4.0"
+dependencies = [
+    "Flask>=3.0",
+    "Babel>=2.12",
+]
+requires-python = ">=3.12"
+authors = [
+  {name = "Peter Justin", email = "peter.justin@outlook.com"},
+]
+maintainers = [
+  {name = "Peter Justin", email = "peter.justin@outlook.com"}
+]
+description = "Adds i18n/l10n support to Flask applications"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICEN[CS]E"]
+keywords = ["flask", "extension", "babel"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+[project.urls]
+Repository = "https://github.com/sh4nks/flask-babelplus"
+Issues = "https://github.com/sh4nks/flask-babelplus/issues"
+Changelog = "https://github.com/sh4nks/flask-babelplus/blob/master/CHANGES"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "hatch",
+    "alabaster",
+    "pre-commit",
+    "py",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["flask_babelplus"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["flask_babelplus"]
+
+[tool.uv]
+package = true
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest]
+# exclude unrelated folders and all old tests
+norecursedirs = [
+    ".*",
+    "env",
+    "tests/translations"
+]
+# more verbose summary (include skip/fail/error/warning), coverage
+addopts = ["-rsfEw", "--cov", "flask_babelplus", "--cov-report=term-missing", "--no-cov-on-fail", "tests/tests.py"]
+
+
+[tool.basedpyright]
+include = ["flask_babelplus"]
+exclude = ["**/node_modules", "**/resources", "**/__pycache__"]
+defineConstant = { DEBUG = true }
+reportGeneralTypeIssues = "none"
+reportIgnoreCommentWithoutRule = false
+reportMissingImports = "error"
+reportMissingTypeStubs = false
+reportUnusedCallResult = false
+reportUnannotatedClassAttribute = false
+reportUnusedParameter = false
+reportAny = false
+reportExplicitAny = false
+
+[tool.ruff.lint]
+ignore = ["E711", "E712"]

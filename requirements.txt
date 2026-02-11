@@ -2,5 +2,11 @@ Flask
 Werkzeug
 Jinja2
 Sphinx
+Babel
 pytest
 pytest-cov
+pytz
+py
+pytest
+pytest-cov
+-e .

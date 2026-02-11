@@ -12,11 +12,18 @@ clean:
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -rf {} +
 
-wheel:
-	python setup.py sdist bdist_wheel
+format: ## Sorts the imports and reformats the code
+	# sort imports / remove unused
+	ruff check --fix --select I
+	ruff check --fix
+	# reformat
+	ruff format
+
+dist:
+	uv build
 
 upload:
-	twine upload dist/* --skip-existing
+	twine upload dist/{*.tar.gz,*.whl} --skip-existing
 
 docs:
 	$(MAKE) -C docs html
