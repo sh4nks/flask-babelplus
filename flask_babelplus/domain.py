@@ -211,13 +211,13 @@ def npgettext(*args: Any, **kwargs: Any):
     return get_domain().npgettext(*args, **kwargs)
 
 
-def lazy_gettext(*args: Any, **kwargs: Any):
-    return LazyString(gettext, *args, **kwargs)
+def lazy_gettext(*args: Any, **kwargs: Any) -> str:
+    return LazyString(gettext, *args, **kwargs)  # pyright: ignore
 
 
-def lazy_ngettext(*args: Any, **kwargs: Any):
-    return LazyString(ngettext, *args, **kwargs)
+def lazy_ngettext(*args: Any, **kwargs: Any) -> str:
+    return LazyString(ngettext, *args, **kwargs)  # pyright: ignore
 
 
-def lazy_pgettext(*args: Any, **kwargs: Any):
-    return LazyString(pgettext, *args, **kwargs)
+def lazy_pgettext(*args: Any, **kwargs: Any) -> str:
+    return LazyString(pgettext, *args, **kwargs)  # pyright: ignore
