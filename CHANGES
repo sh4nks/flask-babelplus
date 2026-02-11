@@ -1,6 +1,17 @@
 Flask-BabelPlus Changelog
 =========================
 
+Version 2.4.0
+-------------
+
+Released on February 12th 2026.
+
+- Dropped support for older Python (< 3.12) versions
+- Replaced pytz with ZoneInfo
+- Migrated to pyproject.toml
+- Tried my best to add some types
+
+
 Version 2.3.0
 -------------
 
