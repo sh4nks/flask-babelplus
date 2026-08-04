@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 flask_babelplus.constants
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10,14 +9,20 @@ extension.
 :license: BSD, see LICENSE for more details.
 """
 
-from typing import Literal, TypeAlias
+from typing import Literal
 
 from werkzeug.datastructures import ImmutableDict
 
-DateFormat: TypeAlias = Literal["short", "medium", "long", "full"] | str | None
+#: The width of a date/time format. Anything else is treated as a literal
+#: Babel format pattern.
+type DateFormatWidth = Literal["short", "medium", "long", "full"]
 
+#: A date/time format: either a width, a Babel format pattern, or ``None``
+#: to fall back to the locale default.
+type DateFormat = DateFormatWidth | str | None
 
-DateFormatKey: TypeAlias = Literal[
+#: A key into :data:`DEFAULT_DATE_FORMATS` / :attr:`Babel.date_formats`.
+type DateFormatKey = Literal[
     "time",
     "date",
     "datetime",
@@ -37,7 +42,7 @@ DateFormatKey: TypeAlias = Literal[
 
 DEFAULT_LOCALE: str = "en"
 DEFAULT_TIMEZONE: str = "UTC"
-DEFAULT_DATE_FORMATS: dict[DateFormatKey, DateFormat] = ImmutableDict(
+DEFAULT_DATE_FORMATS: ImmutableDict[DateFormatKey, DateFormat] = ImmutableDict(
     {
         "time": "medium",
         "date": "medium",

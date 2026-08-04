@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 speaklater
 ~~~~~~~~~~
@@ -13,20 +12,27 @@ See:
 :license: BSD, see LICENSE for more details.
 """
 
-from collections.abc import Iterator
-from typing import Any, Callable, override
+from collections.abc import Callable, Iterator
+from typing import Any, SupportsIndex, override
 
 
-class LazyString(object):
+class LazyString:
+    """A string that is only evaluated when it is actually used.
+
+    Instances quack like :class:`str`: any attribute that is not defined
+    here is looked up on the resolved string, so ``LazyString.upper()``
+    and friends work as expected.
+    """
+
     def __init__(
         self,
         func: Callable[..., str],
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        self._func = func
-        self._args = args
-        self._kwargs = kwargs
+        self._func: Callable[..., str] = func
+        self._args: tuple[Any, ...] = args
+        self._kwargs: dict[str, Any] = kwargs
 
     def __getattr__(self, attr: str) -> Any:
         if attr == "__setstate__":
@@ -38,7 +44,7 @@ class LazyString(object):
 
     @override
     def __repr__(self) -> str:
-        return "l'{0}'".format(str(self))
+        return f"l'{self!s}'"
 
     @override
     def __str__(self) -> str:
@@ -47,45 +53,45 @@ class LazyString(object):
     def __len__(self) -> int:
         return len(str(self))
 
-    def __getitem__(self, key: Any) -> str:
+    def __getitem__(self, key: SupportsIndex | slice) -> str:
         return str(self)[key]
 
     def __iter__(self) -> Iterator[str]:
         return iter(str(self))
 
-    def __contains__(self, item: Any) -> bool:
+    def __contains__(self, item: str) -> bool:
         return item in str(self)
 
-    def __add__(self, other: Any) -> str:
+    def __add__(self, other: str) -> str:
         return str(self) + other
 
-    def __radd__(self, other: Any) -> str:
+    def __radd__(self, other: str) -> str:
         return other + str(self)
 
-    def __mul__(self, other: Any) -> str:
+    def __mul__(self, other: SupportsIndex) -> str:
         return str(self) * other
 
-    def __rmul__(self, other: Any) -> str:
+    def __rmul__(self, other: SupportsIndex) -> str:
         return other * str(self)
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: str) -> bool:
         return str(self) < other
 
-    def __le__(self, other: Any) -> bool:
+    def __le__(self, other: str) -> bool:
         return str(self) <= other
 
     @override
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return str(self) == other
 
     @override
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return str(self) != other
 
-    def __gt__(self, other: Any) -> bool:
+    def __gt__(self, other: str) -> bool:
         return str(self) > other
 
-    def __ge__(self, other: Any) -> bool:
+    def __ge__(self, other: str) -> bool:
         return str(self) >= other
 
     def __html__(self) -> str:
@@ -95,8 +101,8 @@ class LazyString(object):
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def __mod__(self, other: Any) -> str:
+    def __mod__(self, other: object) -> str:
         return str(self) % other
 
-    def __rmod__(self, other: Any) -> str:
+    def __rmod__(self, other: str) -> str:
         return other + str(self)

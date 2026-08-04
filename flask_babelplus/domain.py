@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 flask_babelplus.domain
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -10,7 +9,7 @@ Localization domain.
 """
 
 import os
-from typing import Any
+from typing import Any, cast
 
 from babel import support
 from flask import Flask
@@ -19,33 +18,49 @@ from .speaklater import LazyString
 from .utils import get_locale, get_state
 
 
-class Domain(object):
+def _as_str(lazy: LazyString) -> str:
+    """Present a :class:`LazyString` to type checkers as a plain ``str``.
+
+    ``LazyString`` deliberately is not a ``str`` subclass -- that is what
+    keeps it lazy -- but it implements enough of the string protocol to be
+    used wherever a ``str`` is expected. Annotating the ``lazy_*`` helpers
+    as returning ``LazyString`` is more truthful, but it makes every call
+    site that passes the result to a ``str`` parameter fail to type check,
+    which is noise rather than signal. So the lie is told here, once, in
+    one place, instead of at each caller.
+    """
+    # The hop through ``object`` is what makes the cast legal: ``LazyString``
+    # and ``str`` do not overlap, so checkers reject a direct one.
+    return cast(str, cast(object, lazy))
+
+
+class Domain:
     """Localization domain. By default it will look for tranlations in the
     Flask application directory and "messages" domain - all message
     catalogs should be called ``messages.mo``.
     """
 
-    def __init__(self, dirname: str | None = None, domain: str = "messages"):
-        self.dirname = dirname
-        self.domain = domain
+    def __init__(self, dirname: str | None = None, domain: str = "messages") -> None:
+        self.dirname: str | None = dirname
+        self.domain: str = domain
 
         self.cache: dict[str, support.NullTranslations] = {}
 
-    def as_default(self):
+    def as_default(self) -> None:
         """Set this domain as the default one for the current request"""
         get_state().domain = self
 
-    def get_translations_cache(self):
+    def get_translations_cache(self) -> dict[str, support.NullTranslations]:
         """Returns a dictionary-like object for translation caching"""
         return self.cache
 
-    def get_translations_path(self, app: Flask):
+    def get_translations_path(self, app: Flask) -> str:
         """Returns the translations directory path. Override if you want
         to implement custom behavior.
         """
         return self.dirname or os.path.join(app.root_path, "translations")
 
-    def get_translations(self):
+    def get_translations(self) -> support.NullTranslations:
         """Returns the correct gettext translations that should be used for
         this request.  This will never fail and return a dummy translation
         object if used outside of the request or if a translation cannot be
@@ -69,7 +84,7 @@ class Domain(object):
 
         return translations
 
-    def gettext(self, string: str, **variables: Any):
+    def gettext(self, string: str, **variables: Any) -> str:
         """Translates a string with the current locale and passes in the
         given keyword arguments as mapping to a string formatting string.
 
@@ -83,7 +98,7 @@ class Domain(object):
             return t.ugettext(string) % variables
         return t.ugettext(string)
 
-    def ngettext(self, singular: str, plural: str, num: int, **variables: Any):
+    def ngettext(self, singular: str, plural: str, num: int, **variables: Any) -> str:
         """Translates a string with the current locale and passes in the
         given keyword arguments as mapping to a string formatting string.
         The `num` parameter is used to dispatch between singular and various
@@ -99,7 +114,7 @@ class Domain(object):
         t = self.get_translations()
         return t.ungettext(singular, plural, num) % variables
 
-    def pgettext(self, context: str, string: str, **variables: Any):
+    def pgettext(self, context: str, string: str, **variables: Any) -> str:
         """Like :func:`gettext` but with a context.
 
         Gettext uses the ``msgctxt`` notation to distinguish different
@@ -121,7 +136,7 @@ class Domain(object):
 
     def npgettext(
         self, context: str, singular: str, plural: str, num: int, **variables: Any
-    ):
+    ) -> str:
         """Like :func:`ngettext` but with a context.
 
         .. versionadded:: 0.7
@@ -130,7 +145,7 @@ class Domain(object):
         t = self.get_translations()
         return t.unpgettext(context, singular, plural, num) % variables
 
-    def lazy_gettext(self, string: str, **variables: Any):
+    def lazy_gettext(self, string: str, **variables: Any) -> str:
         """Like :func:`gettext` but the string returned is lazy which means
         it will be translated when it is used as an actual string.
 
@@ -142,9 +157,11 @@ class Domain(object):
             def index():
                 return unicode(hello)
         """
-        return LazyString(self.gettext, string, **variables)
+        return _as_str(LazyString(self.gettext, string, **variables))
 
-    def lazy_ngettext(self, singular: str, plural: str, num: int, **variables: Any):
+    def lazy_ngettext(
+        self, singular: str, plural: str, num: int, **variables: Any
+    ) -> str:
         """Like :func:`ngettext` but the string returned is lazy which means
         it will be translated when it is used as an actual string.
 
@@ -156,15 +173,15 @@ class Domain(object):
             def index():
                 return unicode(a)
         """
-        return LazyString(self.ngettext, singular, plural, num, **variables)
+        return _as_str(LazyString(self.ngettext, singular, plural, num, **variables))
 
-    def lazy_pgettext(self, context: str, string: str, **variables: Any):
+    def lazy_pgettext(self, context: str, string: str, **variables: Any) -> str:
         """Like :func:`pgettext` but the string returned is lazy which means
         it will be translated when it is used as an actual string.
 
         .. versionadded:: 0.7
         """
-        return LazyString(self.pgettext, context, string, **variables)
+        return _as_str(LazyString(self.pgettext, context, string, **variables))
 
 
 # This is the domain that will be used if there is no request context
@@ -175,7 +192,7 @@ class Domain(object):
 domain = Domain()
 
 
-def get_domain():
+def get_domain() -> Domain:
     """Return the correct translation domain that is used for this request.
     This will return the default domain
     e.g. "messages" in <approot>/translations" if none is set for this
@@ -189,35 +206,34 @@ def get_domain():
 
 
 # Create shortcuts for the default Flask domain
-def gettext(*args: Any, **kwargs: Any) -> str:
-    return get_domain().gettext(*args, **kwargs)
+def gettext(string: str, **variables: Any) -> str:
+    return get_domain().gettext(string, **variables)
 
 
-_ = gettext  # noqa
+_ = gettext
 
 
-x: str = _("TEST")
+def ngettext(singular: str, plural: str, num: int, **variables: Any) -> str:
+    return get_domain().ngettext(singular, plural, num, **variables)
 
 
-def ngettext(*args: Any, **kwargs: Any):
-    return get_domain().ngettext(*args, **kwargs)
+def pgettext(context: str, string: str, **variables: Any) -> str:
+    return get_domain().pgettext(context, string, **variables)
 
 
-def pgettext(*args: Any, **kwargs: Any):
-    return get_domain().pgettext(*args, **kwargs)
+def npgettext(
+    context: str, singular: str, plural: str, num: int, **variables: Any
+) -> str:
+    return get_domain().npgettext(context, singular, plural, num, **variables)
 
 
-def npgettext(*args: Any, **kwargs: Any):
-    return get_domain().npgettext(*args, **kwargs)
+def lazy_gettext(string: str, **variables: Any) -> str:
+    return _as_str(LazyString(gettext, string, **variables))
 
 
-def lazy_gettext(*args: Any, **kwargs: Any) -> str:
-    return LazyString(gettext, *args, **kwargs)  # pyright: ignore
+def lazy_ngettext(singular: str, plural: str, num: int, **variables: Any) -> str:
+    return _as_str(LazyString(ngettext, singular, plural, num, **variables))
 
 
-def lazy_ngettext(*args: Any, **kwargs: Any) -> str:
-    return LazyString(ngettext, *args, **kwargs)  # pyright: ignore
-
-
-def lazy_pgettext(*args: Any, **kwargs: Any) -> str:
-    return LazyString(pgettext, *args, **kwargs)  # pyright: ignore
+def lazy_pgettext(context: str, string: str, **variables: Any) -> str:
+    return _as_str(LazyString(pgettext, context, string, **variables))

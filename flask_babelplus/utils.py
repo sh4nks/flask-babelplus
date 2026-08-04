@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 flask_babelplus.utils
 ~~~~~~~~~~~~~~~~~~~~~
@@ -11,8 +10,9 @@ while working with Babel.
 """
 
 import typing as t
+from collections.abc import Generator
 from contextlib import contextmanager
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
@@ -24,15 +24,27 @@ if t.TYPE_CHECKING:
     from .constants import DateFormat, DateFormatKey
     from .core import _BabelState
 
+#: The unit that :func:`format_timedelta` rounds to.
+type TimedeltaGranularity = t.Literal[
+    "year", "month", "week", "day", "hour", "minute", "second"
+]
 
-@t.overload
-def get_state(app: Flask | None = None) -> "_BabelState": ...
+#: A number that Babel knows how to format.
+type Number = float | Decimal | str
 
 
 @t.overload
 def get_state(
-    app: Flask | None = None, silent: bool = False
-) -> "_BabelState | None": ...
+    app: Flask | None = None, silent: t.Literal[False] = False
+) -> "_BabelState": ...
+
+
+@t.overload
+def get_state(app: Flask | None, silent: bool) -> "_BabelState | None": ...
+
+
+@t.overload
+def get_state(app: Flask | None = None, *, silent: bool) -> "_BabelState | None": ...
 
 
 def get_state(app: Flask | None = None, silent: bool = False) -> "_BabelState | None":
@@ -55,7 +67,7 @@ def get_state(app: Flask | None = None, silent: bool = False) -> "_BabelState | 
             init_app() first."""
         )
 
-    return app.extensions["babel"]
+    return t.cast("_BabelState", app.extensions["babel"])
 
 
 def get_locale() -> Locale | None:
@@ -112,7 +124,7 @@ def get_timezone() -> ZoneInfo | None:
     return tzinfo
 
 
-def refresh():
+def refresh() -> None:
     """Refreshes the cached timezones and locale information.  This can
     be used to switch a translation between a request and if you want
     the changes to take place immediately, not just with the next request::
@@ -132,7 +144,7 @@ def refresh():
 
 
 @contextmanager
-def force_locale(locale: str):
+def force_locale(locale: str) -> Generator[None]:
     """Temporarily overrides the currently selected locale.
     Sometimes it is useful to switch the current locale to
     different one, do some tasks and then revert back to the
@@ -153,7 +165,7 @@ def force_locale(locale: str):
     state = get_state()
 
     orig_locale_selector_func = state.babel.locale_selector_func
-    orig_attrs: dict[str, str | None] = {}
+    orig_attrs: dict[str, t.Any] = {}
     for key in ("babel_translations", "babel_locale"):
         orig_attrs[key] = getattr(ctx, key, None)
 
@@ -171,7 +183,7 @@ def force_locale(locale: str):
 def _get_format(
     key: "DateFormatKey",
     format: "DateFormat" = None,
-):
+) -> str | None:
     """A small helper for the datetime formatting functions.  Looks up
     format defaults for different kinds.
     """
@@ -180,27 +192,28 @@ def _get_format(
         format = state.babel.date_formats[key]
 
     if format in ("short", "medium", "full", "long"):
-        rv = state.babel.date_formats["%s.%s" % (key, format)]  # pyright: ignore
+        width_key = t.cast("DateFormatKey", f"{key}.{format}")
+        rv = state.babel.date_formats[width_key]
         if rv is not None:
             format = rv
     return format
 
 
-def to_user_timezone(datetime: datetime):
+def to_user_timezone(datetime: datetime) -> datetime:
     """Convert a datetime object to the user's timezone.  This automatically
     happens on all date formatting unless rebasing is disabled.  If you need
     to convert a :class:`datetime.datetime` object at any time to the user's
     timezone (as returned by :func:`get_timezone` this function can be used).
     """
     if datetime.tzinfo is None:
-        datetime = datetime.replace(tzinfo=timezone.utc)
+        datetime = datetime.replace(tzinfo=UTC)
     tzinfo = get_timezone()
     if tzinfo is None:
-        datetime = datetime.replace(tzinfo=timezone.utc)
+        datetime = datetime.replace(tzinfo=UTC)
     return datetime.replace(tzinfo=tzinfo)
 
 
-def to_utc(datetime: datetime):
+def to_utc(datetime: datetime) -> datetime:
     """Convert a datetime object to UTC and drop tzinfo.  This is the
     opposite operation to :func:`to_user_timezone`.
     """
@@ -211,7 +224,7 @@ def format_datetime(
     datetime: datetime | None = None,
     format: "DateFormat" = None,
     rebase: bool = True,
-):
+) -> str:
     """Return a date formatted according to the given pattern.  If no
     :class:`~datetime.datetime` object is passed, the current time is
     assumed.  By default rebasing happens which causes the object to
@@ -235,7 +248,7 @@ def format_date(
     date: datetime | date | None = None,
     format: "DateFormat" = None,
     rebase: bool = True,
-):
+) -> str:
     """Return a date formatted according to the given pattern.  If no
     :class:`~datetime.datetime` or :class:`~datetime.date` object is passed,
     the current time is assumed.  By default rebasing happens which causes
@@ -258,10 +271,10 @@ def format_date(
 
 
 def format_time(
-    time: datetime | None = None,
+    time: datetime | time | None = None,
     format: "DateFormat" = None,
     rebase: bool = True,
-):
+) -> str:
     """Return a time formatted according to the given pattern.  If no
     :class:`~datetime.datetime` object is passed, the current time is
     assumed.  By default rebasing happens which causes the object to
@@ -283,19 +296,17 @@ def format_time(
 
 def format_timedelta(
     datetime_or_timedelta: datetime | timedelta,
-    granularity: t.Literal[
-        "year", "month", "week", "day", "hour", "minute", "second"
-    ] = "second",
+    granularity: TimedeltaGranularity = "second",
     add_direction: bool = False,
     threshold: float = 0.85,
-):
+) -> str:
     """Format the elapsed time from the given date to now or the given
     timedelta.
     This function is also available in the template context as filter
     named `timedeltaformat`.
     """
     if isinstance(datetime_or_timedelta, datetime):
-        datetime_or_timedelta = datetime.now(timezone.utc) - datetime_or_timedelta
+        datetime_or_timedelta = datetime.now(UTC) - datetime_or_timedelta
 
     return dates.format_timedelta(
         datetime_or_timedelta,
@@ -309,51 +320,48 @@ def format_timedelta(
 def _date_format(
     formatter: t.Callable[..., str],
     obj: datetime | date | time | None,
-    format: str | numbers.NumberPattern | None,
+    format: str | None,
     rebase: bool | None,
-    **extra: t.Any,
-):
+) -> str:
     """Internal helper that formats the date."""
     locale = get_locale()
-    extra = {}
+    extra: dict[str, t.Any] = {}
     if formatter is not dates.format_date and rebase:
         extra["tzinfo"] = get_timezone()
     return formatter(obj, format, locale=locale, **extra)
 
 
-def format_number(number: float | Decimal | str):
+def format_number(number: Number) -> str:
     """Return the given number formatted for the locale in request
 
     :param number: the number to format
     :return: the formatted number
-    :rtype: unicode
     """
     locale = get_locale()
     return numbers.format_decimal(number, locale=locale)
 
 
 def format_decimal(
-    number: float | Decimal | str,
+    number: Number,
     format: str | numbers.NumberPattern | None = None,
-):
+) -> str:
     """Return the given decimal number formatted for the locale in request
 
     :param number: the number to format
     :param format: the format to use
     :return: the formatted number
-    :rtype: unicode
     """
     locale = get_locale()
     return numbers.format_decimal(number, format=format, locale=locale)
 
 
 def format_currency(
-    number: float | Decimal | str,
+    number: Number,
     currency: str,
     format: str | numbers.NumberPattern | None = None,
     currency_digits: bool = True,
     format_type: t.Literal["name", "standard", "accounting"] = "standard",
-):
+) -> str:
     """Return the given number formatted for the locale in request
     :param number: the number to format
     :param currency: the currency code
@@ -363,7 +371,6 @@ def format_currency(
     :param format_type: the currency format type to use
                         [default: standard]
     :return: the formatted number
-    :rtype: unicode
     """
     locale = get_locale()
     return numbers.format_currency(
@@ -376,25 +383,29 @@ def format_currency(
     )
 
 
-def format_percent(number: float | Decimal | str, format: str | None = None):
+def format_percent(
+    number: Number,
+    format: str | numbers.NumberPattern | None = None,
+) -> str:
     """Return formatted percent value for the locale in request
 
     :param number: the number to format
     :param format: the format to use
     :return: the formatted percent number
-    :rtype: unicode
     """
     locale = get_locale()
     return numbers.format_percent(number, format=format, locale=locale)
 
 
-def format_scientific(number: float | Decimal | str, format: str | None = None):
+def format_scientific(
+    number: Number,
+    format: str | numbers.NumberPattern | None = None,
+) -> str:
     """Return value formatted in scientific notation for the locale in request
 
     :param number: the number to format
     :param format: the format to use
     :return: the formatted percent number
-    :rtype: unicode
     """
     locale = get_locale()
     return numbers.format_scientific(number, format=format, locale=locale)
@@ -407,4 +418,4 @@ def _get_current_context() -> SimpleNamespace | None:
     if not hasattr(g, "_flask_babel"):
         g._flask_babel = SimpleNamespace()
 
-    return g._flask_babel
+    return t.cast(SimpleNamespace, g._flask_babel)

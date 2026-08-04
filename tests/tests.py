@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import with_statement
-
 import unittest
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
@@ -27,7 +24,7 @@ class DateFormattingTestCase(unittest.TestCase):
     def test_basics(self):
         app = flask.Flask(__name__)
         babel_ext.Babel(app)
-        d = datetime(2010, 4, 12, 13, 46)
+        d = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
         delta = timedelta(days=6)
 
         with app.test_request_context():
@@ -53,7 +50,7 @@ class DateFormattingTestCase(unittest.TestCase):
         b = babel_ext.Babel()
         app = flask.Flask(__name__)
         b.init_app(app)
-        d = datetime(2010, 4, 12, 13, 46)
+        d = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
 
         with app.test_request_context():
             assert babel_ext.format_datetime(d) == "Apr 12, 2010, 1:46:00\u202fPM"
@@ -74,7 +71,7 @@ class DateFormattingTestCase(unittest.TestCase):
 
     def test_custom_formats(self):
         app = flask.Flask(__name__)
-        app.config.update(
+        app.config.update(  # pyright: ignore[reportUnknownMemberType]
             BABEL_DEFAULT_LOCALE="en_US", BABEL_DEFAULT_TIMEZONE="Pacific/Johnston"
         )
         b = babel_ext.Babel(app)
@@ -84,7 +81,7 @@ class DateFormattingTestCase(unittest.TestCase):
         b.date_formats["date"] = "long"
         b.date_formats["date.short"] = "MM d"
 
-        d = datetime(2010, 4, 12, 13, 46)
+        d = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
 
         with app.test_request_context():
             assert babel_ext.format_datetime(d) == "April 12, 2010 3:46:00 AM"
@@ -96,17 +93,17 @@ class DateFormattingTestCase(unittest.TestCase):
     def test_custom_locale_selector(self):
         app = flask.Flask(__name__)
         b = babel_ext.Babel(app)
-        d = datetime(2010, 4, 12, 13, 46)
+        d = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
 
         the_timezone = "UTC"
         the_locale = "en_US"
 
         @b.localeselector
-        def select_locale():
+        def select_locale():  # pyright: ignore[reportUnusedFunction]
             return the_locale
 
         @b.timezoneselector
-        def select_timezone():
+        def select_timezone():  # pyright: ignore[reportUnusedFunction]
             return the_timezone
 
         with app.test_request_context():
@@ -121,7 +118,7 @@ class DateFormattingTestCase(unittest.TestCase):
     def test_refreshing(self):
         app = flask.Flask(__name__)
         babel_ext.Babel(app)
-        d = datetime(2010, 4, 12, 13, 46)
+        d = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
         babel_ext.refresh()  # nothing should be refreshed (see case below)
         with app.test_request_context():
             assert babel_ext.format_datetime(d) == "Apr 12, 2010, 1:46:00\u202fPM"
@@ -134,7 +131,7 @@ class DateFormattingTestCase(unittest.TestCase):
         b = babel_ext.Babel(app)
 
         @b.localeselector
-        def select_locale():
+        def select_locale():  # pyright: ignore[reportUnusedFunction]
             return "de_DE"
 
         with babel_ext.force_locale("en_US"):
@@ -168,28 +165,28 @@ class GettextTestCase(unittest.TestCase):
 
         with app.test_request_context():
             assert gettext("Hello %(name)s!", name="Peter") == "Hallo Peter!"
-            assert ngettext("%(num)s Apple", "%(num)s Apples", 3) == "3 Äpfel"  # noqa
-            assert ngettext("%(num)s Apple", "%(num)s Apples", 1) == "1 Apfel"  # noqa
+            assert ngettext("%(num)s Apple", "%(num)s Apples", 3) == "3 Äpfel"
+            assert ngettext("%(num)s Apple", "%(num)s Apples", 1) == "1 Apfel"
 
-            assert pgettext("button", "Hello %(name)s!", name="Peter") == "Hallo Peter!"  # noqa
-            assert pgettext("dialog", "Hello %(name)s!", name="Peter") == "Hallo Peter!"  # noqa
+            assert pgettext("button", "Hello %(name)s!", name="Peter") == "Hallo Peter!"
+            assert pgettext("dialog", "Hello %(name)s!", name="Peter") == "Hallo Peter!"
             assert pgettext("button", "Hello Guest!") == "Hallo Gast!"
-            assert npgettext("shop", "%(num)s Apple", "%(num)s Apples", 3) == "3 Äpfel"  # noqa
+            assert npgettext("shop", "%(num)s Apple", "%(num)s Apples", 3) == "3 Äpfel"
             assert (
                 npgettext("fruits", "%(num)s Apple", "%(num)s Apples", 3) == "3 Äpfel"
-            )  # noqa
+            )
 
     def test_template_basics(self):
         app = flask.Flask(__name__)
         babel_ext.Babel(app, default_locale="de_DE")
 
         def t(x):
-            return flask.render_template_string("{{ %s }}" % x)
+            return flask.render_template_string(f"{{{{ {x} }}}}")
 
         with app.test_request_context():
-            assert t("gettext('Hello %(name)s!', name='Peter')") == "Hallo Peter!"  # noqa
-            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 3)") == "3 Äpfel"  # noqa
-            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 1)") == "1 Apfel"  # noqa
+            assert t("gettext('Hello %(name)s!', name='Peter')") == "Hallo Peter!"
+            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 3)") == "3 Äpfel"
+            assert t("ngettext('%(num)s Apple', '%(num)s Apples', 1)") == "1 Apfel"
             assert (
                 flask.render_template_string(
                     """
@@ -270,13 +267,13 @@ class GettextTestCase(unittest.TestCase):
         babel_ext.Babel(app, default_locale="de_DE")
 
         one_apple = lazy_ngettext("%(num)s Apple", "%(num)s Apples", 1)
-        one_apple_d = domain.lazy_ngettext("%(num)s Apple", "%(num)s Apples", 1)  # noqa
+        one_apple_d = domain.lazy_ngettext("%(num)s Apple", "%(num)s Apples", 1)
         with app.test_request_context():
             assert str(one_apple) == "1 Apfel"
             assert str(one_apple_d) == "1 Apfel"
 
         two_apples = lazy_ngettext("%(num)s Apple", "%(num)s Apples", 2)
-        two_apples_d = domain.lazy_ngettext("%(num)s Apple", "%(num)s Apples", 2)  # noqa
+        two_apples_d = domain.lazy_ngettext("%(num)s Apple", "%(num)s Apples", 2)
         with app.test_request_context():
             assert str(two_apples) == "2 Äpfel"
             assert str(two_apples_d) == "2 Äpfel"
@@ -359,11 +356,10 @@ class IntegrationTestCase(unittest.TestCase):
         assert get_state(silent=True) is None
 
         app = flask.Flask(__name__)
-        with pytest.raises(RuntimeError):
-            with app.test_request_context():
-                # app = app; silent = False
-                # babel not in app.extensions
-                get_state()
+        with pytest.raises(RuntimeError), app.test_request_context():
+            # app = app; silent = False
+            # babel not in app.extensions
+            get_state()
 
         # same as above, just silent
         with app.test_request_context():
@@ -389,7 +385,7 @@ class IntegrationTestCase(unittest.TestCase):
         b = babel_ext.Babel(app)
 
         @b.timezoneselector
-        def tz_none():
+        def tz_none():  # pyright: ignore[reportUnusedFunction]
             return None
 
         with app.test_request_context():
@@ -400,7 +396,7 @@ class IntegrationTestCase(unittest.TestCase):
         b = babel_ext.Babel(app)
 
         @b.timezoneselector
-        def tz_vienna():
+        def tz_vienna():  # pyright: ignore[reportUnusedFunction]
             return "Europe/Vienna"
 
         with app.test_request_context():
@@ -409,7 +405,7 @@ class IntegrationTestCase(unittest.TestCase):
     def test_convert_timezone(self):
         app = flask.Flask(__name__)
         babel_ext.Babel(app)
-        dt = datetime(2010, 4, 12, 13, 46)
+        dt = datetime(2010, 4, 12, 13, 46)  # noqa: DTZ001
 
         with app.test_request_context():
             dt_utc = babel_ext.to_utc(dt)

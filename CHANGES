@@ -1,6 +1,15 @@
 Flask-BabelPlus Changelog
 =========================
 
+Version 2.4.1
+-------------
+
+Unreleased
+
+- Ship a ``py.typed`` marker so the type annotations are visible to type
+  checkers in downstream projects (PEP 561).
+
+
 Version 2.4.0
 -------------
 
