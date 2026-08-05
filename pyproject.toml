@@ -29,6 +29,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
+
 [project.urls]
 Repository = "https://github.com/sh4nks/flask-babelplus"
 Issues = "https://github.com/sh4nks/flask-babelplus/issues"
@@ -40,14 +41,32 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "hatch",
-    "alabaster",
-    "basedpyright",
+    "ruff",
+    "tox>=4.39",
+    "tox-uv",
+    {include-group = "pre-commit"},
+    {include-group = "docs"},
+    {include-group = "tests"},
+    {include-group = "typing"},
+]
+pre-commit = [
     "pre-commit",
-    "py",
+    "pre-commit-uv",
+]
+docs = [
+    "pallets-sphinx-themes",
+    "sphinx",
+    "sphinx-issues",
+    "sphinx-tabs",
+    "sphinx-intl>=2.3.1",
+    "sphinxcontrib-log-cabinet",
+]
+tests = [
     "pytest",
     "pytest-cov",
-    "ruff",
+]
+typing = [
+    "basedpyright",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -56,22 +75,48 @@ only-include = ["flask_babelplus"]
 [tool.hatch.build.targets.wheel]
 packages = ["flask_babelplus"]
 
-[tool.uv]
-package = true
-
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.pytest]
-# exclude unrelated folders and all old tests
-norecursedirs = [
-    ".*",
-    "env",
-    "tests/translations"
-]
-# more verbose summary (include skip/fail/error/warning), coverage
-addopts = ["-rsfEw", "--cov", "flask_babelplus", "--cov-report=term-missing", "--no-cov-on-fail", "tests/tests.py"]
+[tool.uv]
+package = true
+default-groups = ["dev", "pre-commit", "tests", "typing"]
 
+[tool.ruff]
+src = ["."]
+fix = true
+show-fixes = true
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "I",  # isort
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
+ignore = ["E711", "E712"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# the test module is tests/tests.py, not tests/test_*.py
+python_files = ["tests.py"]
+# exclude the compiled translations fixtures
+norecursedirs = ["tests/translations"]
+# more verbose summary (include skip/fail/error/warning)
+addopts = ["-rsfEw"]
+
+[tool.coverage.run]
+branch = true
+source = ["flask_babelplus"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if t.TYPE_CHECKING",
+    "raise NotImplementedError",
+]
 
 [tool.basedpyright]
 include = ["flask_babelplus"]
@@ -91,5 +136,58 @@ reportImportCycles = false
 reportAny = false
 reportExplicitAny = false
 
-[tool.ruff.lint]
-ignore = ["E711", "E712"]
+[tool.tox]
+env_list = [
+    "py3.14",
+    "py3.13",
+    "py3.12",
+    "typing",
+]
+
+[tool.tox.env_run_base]
+description = "pytest on latest dependency versions"
+runner = "uv-venv-lock-runner"
+package = "wheel"
+wheel_build_env = ".pkg"
+constrain_package_deps = true
+use_frozen_constraints = true
+dependency_groups = ["tests"]
+commands = [["pytest", "-v", "--capture=tee-sys", "--tb=short"]]
+
+[tool.tox.env.typing]
+description = "run static type checkers"
+dependency_groups = ["typing"]
+commands = [["basedpyright"]]
+
+[tool.tox.env.style]
+description = "run all pre-commit hooks on all files"
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "run", "--all-files"]]
+
+[tool.tox.env.docs]
+description = "build docs"
+dependency_groups = ["docs"]
+commands = [["sphinx-build", "-E", "-W", "-b", "html", "docs", "docs/_build/"]]
+
+[tool.tox.env.update-actions]
+description = "update GitHub Actions pins"
+labels = ["update"]
+dependency_groups = ["gha-update"]
+skip_install = true
+commands = [["gha-update"]]
+
+[tool.tox.env.update-pre_commit]
+description = "update pre-commit pins"
+labels = ["update"]
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "autoupdate", "--freeze", "-j4"]]
+
+[tool.tox.env.update-requirements]
+description = "update uv lock"
+labels = ["update"]
+dependency_groups = []
+no_default_groups = true
+skip_install = true
+commands = [["uv", "lock", {replace = "posargs", default = ["-U"], extend = true}]]

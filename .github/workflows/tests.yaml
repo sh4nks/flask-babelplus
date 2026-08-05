@@ -1,0 +1,38 @@
+name: Tests
+on:
+  push:
+    branches:
+      - master
+      - "*.x"
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+      - "*.rst"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+      - "*.rst"
+jobs:
+  tests:
+    name: ${{ matrix.name || matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { python: "3.14" }
+          - { python: "3.13" }
+          - { python: "3.12" }
+          - { name: "typing", tox: "typing", python: "3.13" }
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - run: uv sync --group dev
+      - run: uv run tox run -e ${{ matrix.tox || format('py{0}', matrix.python) }}
