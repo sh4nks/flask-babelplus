@@ -101,7 +101,7 @@ def get_locale() -> Locale | None:
 
 def get_timezone() -> ZoneInfo | None:
     """Returns the timezone that should be used for this request as
-    `pytz.timezone` object.  This returns `None` if used outside of
+    `zoneinfo.ZoneInfo` object.  This returns `None` if used outside of
     a request.
     """
     ctx = _get_current_context()

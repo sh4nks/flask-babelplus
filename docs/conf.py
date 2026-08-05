@@ -1,7 +1,7 @@
 from pallets_sphinx_themes import ProjectLink, get_version
 
 project = "Flask-BabelPlus"
-copyright = "2016, Peter Justin, Serge S. Koval, Armin Ronacher"
+copyright = "2016-2026, Peter Justin, Serge S. Koval, Armin Ronacher"
 author = "Peter Justin, Serge S. Koval, Armin Ronacher"
 release, version = get_version("Flask-BabelPlus")
 

@@ -90,8 +90,8 @@ class Domain:
 
         ::
 
-            gettext(u'Hello World!')
-            gettext(u'Hello %(name)s!', name='World')
+            gettext('Hello World!')
+            gettext('Hello %(name)s!', name='World')
         """
         t = self.get_translations()
         if variables:
@@ -108,7 +108,7 @@ class Domain:
 
         ::
 
-            ngettext(u'%(num)d Apple', u'%(num)d Apples', num=len(apples))
+            ngettext('%(num)d Apple', '%(num)d Apples', num=len(apples))
         """
         variables.setdefault("num", num)
         t = self.get_translations()
@@ -122,7 +122,7 @@ class Domain:
 
         For example::
 
-            pgettext(u'Button label', 'Log in')
+            pgettext('Button label', 'Log in')
 
         Learn more about contexts here:
         https://www.gnu.org/software/gettext/manual/html_node/Contexts.html
@@ -151,11 +151,11 @@ class Domain:
 
         Example::
 
-            hello = lazy_gettext(u'Hello World')
+            hello = lazy_gettext('Hello World')
 
             @app.route('/')
             def index():
-                return unicode(hello)
+                return str(hello)
         """
         return _as_str(LazyString(self.gettext, string, **variables))
 
@@ -167,11 +167,11 @@ class Domain:
 
         Example::
 
-            a = lazy_ngettext(u'%(num)d Apple', u'%(num)d Apples', num=len(a))
+            a = lazy_ngettext('%(num)d Apple', '%(num)d Apples', num=len(a))
 
             @app.route('/')
             def index():
-                return unicode(a)
+                return str(a)
         """
         return _as_str(LazyString(self.ngettext, singular, plural, num, **variables))
 

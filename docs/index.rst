@@ -4,25 +4,24 @@ Flask-BabelPlus
 .. module:: flask_babelplus
 
 Flask-BabelPlus is an extension to `Flask`_ that adds i18n and l10n support to
-any Flask application with the help of `babel`_, `pytz`_ and
-`speaklater`_.  It has builtin support for date formatting with timezone
-support as well as a very simple and friendly interface to :mod:`gettext`
-translations.
+any Flask application with the help of `babel`_, the standard library's
+:mod:`zoneinfo` module and `speaklater`_.  It has builtin support for date
+formatting with timezone support as well as a very simple and friendly
+interface to :mod:`gettext` translations.
+
+Flask-BabelPlus requires Python 3.12 or newer.
 
 
 Installation
 ------------
 
-Install the extension with one of the following commands::
-
-    $ easy_install Flask-BabelPlus
-
-or alternatively if you have pip installed::
+Install the extension with pip::
 
     $ pip install Flask-BabelPlus
 
-Please note that Flask-BabelPlus requires Jinja 2.5.  If you are using an
-older version you will have to upgrade or disable the Jinja support.
+or, if you use `uv`_::
+
+    $ uv add Flask-BabelPlus
 
 
 Configuration
@@ -116,22 +115,22 @@ Here some examples:
 >>> from flask_babelplus import format_datetime
 >>> from datetime import datetime
 >>> format_datetime(datetime(1987, 3, 5, 17, 12))
-u'Mar 5, 1987 5:12:00 PM'
+'Mar 5, 1987, 5:12:00 PM'
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'full')
-u'Thursday, March 5, 1987 5:12:00 PM World (GMT) Time'
+'Thursday, March 5, 1987, 5:12:00 PM Coordinated Universal Time'
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'short')
-u'3/5/87 5:12 PM'
+'3/5/87, 5:12 PM'
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'dd mm yyy')
-u'05 12 1987'
+'05 12 1987'
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'dd mm yyyy')
-u'05 12 1987'
+'05 12 1987'
 
 And again with a different language:
 
 >>> app.config['BABEL_DEFAULT_LOCALE'] = 'de'
 >>> from flask_babelplus import refresh; refresh()
 >>> format_datetime(datetime(1987, 3, 5, 17, 12), 'EEEE, d. MMMM yyyy H:mm')
-u'Donnerstag, 5. M\xe4rz 1987 17:12'
+'Donnerstag, 5. März 1987 17:12'
 
 For more format examples head over to the `babel`_ documentation.
 
@@ -151,9 +150,9 @@ to translate strings that might become plural.  Here some examples::
 
     from flask_babelplus import gettext, ngettext
 
-    gettext(u'A simple string')
-    gettext(u'Value: %(value)s', value=42)
-    ngettext(u'%(num)s Apple', u'%(num)s Apples', number_of_apples)
+    gettext('A simple string')
+    gettext('Value: %(value)s', value=42)
+    ngettext('%(num)s Apple', '%(num)s Apples', number_of_apples)
 
 Additionally if you want to use constant strings somewhere in your
 application and define them outside of a request, you can use a lazy
@@ -163,7 +162,7 @@ To use such a lazy string, use the :func:`lazy_gettext` function::
     from flask_babelplus import lazy_gettext
 
     class MyForm(formlibrary.FormBase):
-        success_message = lazy_gettext(u'The form was successfully saved.')
+        success_message = lazy_gettext('The form was successfully saved.')
 
 So how does Flask-BabelPlus find the translations?  Well first you have to
 create some.  Here is how you do it:
@@ -185,7 +184,7 @@ is what you want in there:
 
     [python: **.py]
     [jinja2: **/templates/**.html]
-    extensions=jinja2.ext.autoescape,jinja2.ext.with_
+    extensions=jinja2.ext.autoescape
 
 Save it as ``babel.cfg`` or something similar next to your application.
 Then it's time to run the `pybabel` command that comes with Babel to
@@ -233,7 +232,7 @@ For example, if you want to have translations for German, Spanish and French,
 directory structure should look like this:
 
     translations/de/LC_MESSAGES/messages.mo
-    translations/sp/LC_MESSAGES/messages.mo
+    translations/es/LC_MESSAGES/messages.mo
     translations/fr/LC_MESSAGES/messages.mo
 
 Translation Domains
@@ -304,22 +303,6 @@ To change the default domain in a request context, call the
 other requests will use the default ``messages.mo``. Note that a
 :class:`Babel` must be initialized for the app for translations to
 work at all.
-
-Troubleshooting
----------------
-
-On Snow Leopard pybabel will most likely fail with an exception.  If this
-happens, check if this command outputs UTF-8::
-
-    $ echo $LC_CTYPE
-    UTF-8
-
-This is a OS X bug unfortunately.  To fix it, put the following lines into
-your ``~/.profile`` file::
-
-    export LC_CTYPE=en_US.utf-8
-
-Then restart your terminal.
 
 API
 ---
@@ -415,8 +398,8 @@ Additional Information
 * :ref:`search`
 
 
-.. _Flask: http://flask.pocoo.org/
-.. _babel: http://babel.edgewall.org/
-.. _pytz: http://pytz.sourceforge.net/
+.. _Flask: https://flask.palletsprojects.com/
+.. _babel: https://babel.pocoo.org/
+.. _uv: https://docs.astral.sh/uv/
 .. _speaklater: https://github.com/sh4nks/flask-babelplus/blob/master/flask_babelplus/speaklater.py
 .. _Flask-BabelEx: https://github.com/mrjoes/flask-babelex
